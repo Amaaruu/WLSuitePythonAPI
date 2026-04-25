@@ -1,12 +1,14 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
+import json
+import re
 from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
 
-app = FastAPI(title="LAndIng AI Service")
+app = FastAPI(title="WLSuite AI Engine")
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -18,18 +20,13 @@ class ProjectData(BaseModel):
     projectName: str
     businessSector: str
     communicationTone: str
-    colorPalette: str
-    userPlan: str  # Puede ser "BASIC", "INTERMEDIATE" o "PREMIUM"
+    colorPalette: str  # Ya no dicta el diseño, pero le da contexto a la IA sobre la vibra de la marca
+    userPlan: str
 
-#EL DICCIONARIO DE PLANES
+# DICCIONARIO DE PLANES
 MODELOS_IA = {
-    # Plan Básico: Gemini 
     "BASIC": "google/gemini-2.0-flash-exp:free", 
-    
-    # Plan Intermedio: ChatGPT
     "INTERMEDIATE": "openai/gpt-4o-mini", 
-    
-    # Plan Premium: Claude 3.5 Sonnet
     "PREMIUM": "anthropic/claude-3.5-sonnet"
 }
 
@@ -40,29 +37,48 @@ def home():
 @app.post("/api/v1/ai/generate")
 async def generate_landing(data: ProjectData):
     try:
-        # Buscamos qué modelo le toca. 
-        # Si envían un plan raro por error, le damos el BASIC por defecto.
         plan_usuario = data.userPlan.upper()
         modelo_elegido = MODELOS_IA.get(plan_usuario, MODELOS_IA["BASIC"])
         
-        print(f"[{plan_usuario}] Generando web para: {data.projectName}")
+        print(f"[{plan_usuario}] Generando estructura web para: {data.projectName}")
         print(f"Usando el modelo: {modelo_elegido}")
         
+        # El nuevo prompt: Estructurado, enfocado en conversiones locales y JSON
         prompt_ingenieria = f"""
-        Eres un desarrollador web experto en UI/UX.
-        Tu tarea es crear una Landing Page en un solo archivo usando HTML5 y Tailwind CSS (vía CDN).
+        Eres un Copywriter experto en CRO (Conversion Rate Optimization) para e-commerce.
+        Tu tarea es estructurar los textos persuasivos de una "Landing Page de un Solo Producto" (Single-Product Funnel).
         
-        Requerimientos del cliente:
-        - Nombre de la empresa: {data.projectName}
-        - Rubro o sector: {data.businessSector}
+        Contexto del proyecto:
+        - Producto/Empresa: {data.projectName}
+        - Sector: {data.businessSector}
         - Tono de comunicación: {data.communicationTone}
-        - Colores corporativos principales: {data.colorPalette}
+        - Mercado Objetivo: Chile (Enfocado en validación local y arbitraje geográfico)
         
-        La página debe tener: Un Header, una sección Hero persuasiva, características y un Footer.
-        IMPORTANTE: Devuelve ÚNICAMENTE el código HTML.
+        Instrucciones: Crea textos cortos, directos y minimalistas. No uses lenguaje corporativo aburrido.
+        
+        IMPORTANTE: Devuelve ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin comillas invertidas ni bloques de markdown (```json).
+        Debes seguir EXACTAMENTE esta estructura:
+        {{
+            "hero": {{
+                "headline": "Título principal persuasivo (máx 8 palabras)",
+                "subheadline": "Subtítulo que ataque un punto de dolor o resalte el valor principal",
+                "ctaButton": "Texto del botón de acción principal (ej. Comprar ahora)"
+            }},
+            "features": [
+                {{"title": "Característica 1", "description": "Descripción breve y concisa"}},
+                {{"title": "Característica 2", "description": "Descripción breve y concisa"}},
+                {{"title": "Característica 3", "description": "Descripción breve y concisa"}}
+            ],
+            "socialProof": {{
+                "urgencyText": "Texto de escasez (ej. Oferta válida solo por hoy en todo Chile)",
+                "shippingText": "Texto de logística (ej. Envíos rápidos por BlueExpress)"
+            }},
+            "footer": {{
+                "contact": "Soporte: contacto@{data.projectName.lower().replace(' ', '')}.cl"
+            }}
+        }}
         """
 
-        #Inyectamos la variable 'modelo_elegido' en la llamada a OpenRouter
         response = client.chat.completions.create(
             model=modelo_elegido, 
             messages=[
@@ -70,15 +86,32 @@ async def generate_landing(data: ProjectData):
             ]
         )
 
-        codigo_generado = response.choices[0].message.content
+        respuesta_ia = response.choices[0].message.content
+
+        # Limpieza: Por si la IA decide envolver la respuesta en bloques de código markdown
+        respuesta_limpia = re.sub(r'^```json\s*', '', respuesta_ia)
+        respuesta_limpia = re.sub(r'^```\s*', '', respuesta_limpia)
+        respuesta_limpia = re.sub(r'\s*```$', '', respuesta_limpia)
+        respuesta_limpia = respuesta_limpia.strip()
+
+        # Parseamos el string a un diccionario nativo de Python
+        try:
+            ai_metadata_json = json.loads(respuesta_limpia)
+        except json.JSONDecodeError:
+            # Fallback seguro por si la IA alucina y daña el formato
+            ai_metadata_json = {
+                "error": "El modelo no generó un JSON válido",
+                "raw_response": respuesta_ia
+            }
 
         return {
             "status": "success",
             "projectId": data.projectId,
             "plan_usado": plan_usuario,
             "ai_engine": modelo_elegido,
-            "generatedHtml": codigo_generado
+            "aiMetadata": ai_metadata_json # <-- Devolvemos el JSON estructurado, listo para Java
         }
+        
     except Exception as e:
         print(f"Error en la IA: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error al comunicarse con la IA")
+        raise HTTPException(status_code=500, detail=f"Error al comunicarse con la IA: {str(e)}")
