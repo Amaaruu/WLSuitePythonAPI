@@ -23,35 +23,56 @@ class ProjectData(BaseModel):
     projectName: str
     projectIdea: str
     callToAction: str
-    
     businessSector: Optional[str] = None
     communicationTone: Optional[str] = None
     colorPalette: Optional[str] = None
-    
     visualStyle: Optional[str] = None
     animationLevel: Optional[str] = None
     customPrompt: Optional[str] = None
 
-# DICCIONARIO DE MODELOS COMERCIALES CORREGIDO
-MODELOS_IA = {
-    "BASIC": "google/gemini-2.5-flash-lite",
-    "INTERMEDIATE": "openai/gpt-4o-mini", 
-    "PREMIUM": "anthropic/claude-3.5-sonnet"
+
+PLAN_ALIASES = {
+    "BASICO":       "BASIC",
+    "BÁSICO":       "BASIC",
+    "INTERMEDIO":   "INTERMEDIATE",
+    "PREMIUM":      "PREMIUM",
+    "BASIC":        "BASIC",
+    "INTERMEDIATE": "INTERMEDIATE",
+    "basico":       "BASIC",
+    "intermedio":   "INTERMEDIATE",
+    "premium":      "PREMIUM",
 }
+
+MODELOS_IA = {
+    "BASIC":        "google/gemini-2.5-flash-lite",
+    "INTERMEDIATE": "openai/gpt-4o-mini",
+    "PREMIUM":      "anthropic/claude-sonnet-4-5",
+}
+
+PLAN_FALLBACK = "BASIC"
+
 
 @app.get("/")
 def home():
     return {"message": "Motor de IA Multimodelo Activo con Progressive Disclosure"}
 
+
 @app.post("/api/v1/ai/generate")
 async def generate_landing(data: ProjectData):
     try:
-        plan_usuario = data.userPlan.upper()
-        modelo_elegido = MODELOS_IA.get(plan_usuario, MODELOS_IA["BASIC"])
-        
-        print(f"[{plan_usuario}] Generando arquitectura web para: {data.projectName}")
+        # FIX 3: Normalizar el plan antes de usarlo en cualquier lógica
+        plan_raw = (data.userPlan or "").strip()
+        plan_normalizado = PLAN_ALIASES.get(plan_raw) or PLAN_ALIASES.get(plan_raw.upper())
+
+        if not plan_normalizado:
+            print(f"[WARN] Plan '{plan_raw}' no reconocido. Usando fallback '{PLAN_FALLBACK}'.")
+            plan_normalizado = PLAN_FALLBACK
+
+        modelo_elegido = MODELOS_IA[plan_normalizado]
+
+        print(f"[{plan_normalizado}] Generando arquitectura web para: {data.projectName}")
         print(f"Usando el motor: {modelo_elegido}")
-        
+
         prompt_ingenieria = f"""
         Eres un Copywriter experto en CRO (Conversion Rate Optimization) para e-commerce.
         Tu tarea es estructurar los textos persuasivos de una "Landing Page de un Solo Producto".
@@ -65,7 +86,8 @@ async def generate_landing(data: ProjectData):
         Instrucciones: Crea textos cortos, directos y minimalistas. No uses lenguaje corporativo aburrido.
         """
 
-        if plan_usuario in ["INTERMEDIATE", "PREMIUM"]:
+        # FIX 4: Todos los if/elif usan plan_normalizado, no plan_raw
+        if plan_normalizado in ["INTERMEDIATE", "PREMIUM"]:
             prompt_ingenieria += f"""
             Contexto estratégico y de marca:
             - Sector de la industria: {data.businessSector or 'No especificado'}
@@ -74,7 +96,7 @@ async def generate_landing(data: ProjectData):
             Ajusta tu redacción para que haga 'match' perfecto con este tono de comunicación.
             """
 
-        if plan_usuario == "PREMIUM":
+        if plan_normalizado == "PREMIUM":
             prompt_ingenieria += f"""
             Directrices Avanzadas de UX:
             - Estilo visual objetivo: {data.visualStyle or 'Moderno'}
@@ -88,7 +110,7 @@ async def generate_landing(data: ProjectData):
                 Debes integrar obligatoriamente esta solicitud dentro de la estructura de tu respuesta.
                 """
 
-        if plan_usuario == "BASIC":
+        if plan_normalizado == "BASIC":
             estructura_json = """
             {
                 "hero": {"headline": "Título principal", "subheadline": "Breve descripción", "ctaButton": "Botón"},
@@ -99,7 +121,7 @@ async def generate_landing(data: ProjectData):
                 "footer": {"contact": "contacto@empresa.cl"}
             }
             """
-        elif plan_usuario == "INTERMEDIATE":
+        elif plan_normalizado == "INTERMEDIATE":
             estructura_json = """
             {
                 "hero": {"headline": "...", "subheadline": "...", "ctaButton": "..."},
@@ -109,7 +131,7 @@ async def generate_landing(data: ProjectData):
                 "footer": {"contact": "contacto@empresa.cl"}
             }
             """
-        else: 
+        else:  # PREMIUM
             estructura_json = """
             {
                 "hero": {"headline": "...", "subheadline": "...", "ctaButton": "..."},
@@ -128,7 +150,7 @@ async def generate_landing(data: ProjectData):
         """
 
         response = client.chat.completions.create(
-            model=modelo_elegido, 
+            model=modelo_elegido,
             messages=[
                 {"role": "user", "content": prompt_ingenieria}
             ]
@@ -136,12 +158,8 @@ async def generate_landing(data: ProjectData):
 
         respuesta_ia = response.choices[0].message.content
 
-        # Extracción segura a prueba de errores
         match = re.search(r'\{.*\}', respuesta_ia, re.DOTALL)
-        if match:
-            respuesta_limpia = match.group(0)
-        else:
-            respuesta_limpia = respuesta_ia
+        respuesta_limpia = match.group(0) if match else respuesta_ia
 
         try:
             ai_metadata_json = json.loads(respuesta_limpia)
@@ -154,11 +172,12 @@ async def generate_landing(data: ProjectData):
         return {
             "status": "success",
             "projectId": data.projectId,
-            "plan_usado": plan_usuario,
+            "plan_usado": plan_normalizado,
+            "plan_recibido": plan_raw,
             "ai_engine": modelo_elegido,
-            "aiMetadata": ai_metadata_json 
+            "aiMetadata": ai_metadata_json
         }
-        
+
     except Exception as e:
         error_details = traceback.format_exc()
         print(f"Error Crítico en la IA:\n{error_details}")
