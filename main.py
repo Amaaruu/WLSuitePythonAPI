@@ -34,7 +34,7 @@ class ProjectData(BaseModel):
 
 # DICCIONARIO DE MODELOS COMERCIALES CORREGIDO
 MODELOS_IA = {
-    "BASIC": "google/gemini-flash-1.5",
+    "BASIC": "google/gemini-2.5-flash-lite",
     "INTERMEDIATE": "openai/gpt-4o-mini", 
     "PREMIUM": "anthropic/claude-3.5-sonnet"
 }
