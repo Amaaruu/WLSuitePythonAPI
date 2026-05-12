@@ -4,10 +4,10 @@ from typing import Optional
 import os
 import json
 import re
+import traceback
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# Cargar variables de entorno
 load_dotenv()
 
 app = FastAPI(title="WLSuite AI Engine - Progressive Disclosure")
@@ -17,28 +17,24 @@ client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
 )
 
-# 1. MODELO ELÁSTICO: Solo los campos básicos son obligatorios. El resto es 'Optional' (puede llegar nulo).
 class ProjectData(BaseModel):
-    # Campos obligatorios (Plan Básico en adelante)
     projectId: int
     userPlan: str
     projectName: str
     projectIdea: str
     callToAction: str
     
-    # Campos Intermedios (Opcionales)
     businessSector: Optional[str] = None
     communicationTone: Optional[str] = None
     colorPalette: Optional[str] = None
     
-    # Campos Premium (Opcionales)
     visualStyle: Optional[str] = None
     animationLevel: Optional[str] = None
     customPrompt: Optional[str] = None
 
-# DICCIONARIO DE MODELOS COMERCIALES
+# DICCIONARIO DE MODELOS COMERCIALES CORREGIDO
 MODELOS_IA = {
-    "BASIC": "google/gemini-1.5-flash", 
+    "BASIC": "google/gemini-flash-1.5",
     "INTERMEDIATE": "openai/gpt-4o-mini", 
     "PREMIUM": "anthropic/claude-3.5-sonnet"
 }
@@ -56,7 +52,6 @@ async def generate_landing(data: ProjectData):
         print(f"[{plan_usuario}] Generando arquitectura web para: {data.projectName}")
         print(f"Usando el motor: {modelo_elegido}")
         
-        # 2. PROMPT DINÁMICO: EL BLOQUE BASE (Para todos los planes)
         prompt_ingenieria = f"""
         Eres un Copywriter experto en CRO (Conversion Rate Optimization) para e-commerce.
         Tu tarea es estructurar los textos persuasivos de una "Landing Page de un Solo Producto".
@@ -70,7 +65,6 @@ async def generate_landing(data: ProjectData):
         Instrucciones: Crea textos cortos, directos y minimalistas. No uses lenguaje corporativo aburrido.
         """
 
-        # PROMPT DINÁMICO: CONTEXTO INTERMEDIO / PREMIUM
         if plan_usuario in ["INTERMEDIATE", "PREMIUM"]:
             prompt_ingenieria += f"""
             Contexto estratégico y de marca:
@@ -80,7 +74,6 @@ async def generate_landing(data: ProjectData):
             Ajusta tu redacción para que haga 'match' perfecto con este tono de comunicación.
             """
 
-        # PROMPT DINÁMICO: CONTEXTO EXCLUSIVO PREMIUM
         if plan_usuario == "PREMIUM":
             prompt_ingenieria += f"""
             Directrices Avanzadas de UX:
@@ -95,11 +88,10 @@ async def generate_landing(data: ProjectData):
                 Debes integrar obligatoriamente esta solicitud dentro de la estructura de tu respuesta.
                 """
 
-        # 3. ESCALAR LA ESTRUCTURA DEL JSON DE SALIDA
         if plan_usuario == "BASIC":
             estructura_json = """
             {
-                "hero": {"headline": "Título principal (máx 8 palabras)", "subheadline": "Breve descripción del dolor que resuelve", "ctaButton": "Texto del botón"},
+                "hero": {"headline": "Título principal", "subheadline": "Breve descripción", "ctaButton": "Botón"},
                 "features": [
                     {"title": "Característica 1", "description": "Breve"},
                     {"title": "Característica 2", "description": "Breve"}
@@ -112,31 +104,29 @@ async def generate_landing(data: ProjectData):
             {
                 "hero": {"headline": "...", "subheadline": "...", "ctaButton": "..."},
                 "features": [{"title": "...", "description": "..."}, {"title": "...", "description": "..."}],
-                "socialProof": {"urgencyText": "Texto de escasez/oferta", "shippingText": "Texto de envío"},
+                "socialProof": {"urgencyText": "Texto oferta", "shippingText": "Texto envío"},
                 "faq": [{"question": "Pregunta 1", "answer": "Respuesta 1"}, {"question": "Pregunta 2", "answer": "Respuesta 2"}],
                 "footer": {"contact": "contacto@empresa.cl"}
             }
             """
-        else: # PREMIUM
+        else: 
             estructura_json = """
             {
                 "hero": {"headline": "...", "subheadline": "...", "ctaButton": "..."},
                 "features": [{"title": "...", "description": "..."}, {"title": "...", "description": "..."}],
                 "socialProof": {"urgencyText": "...", "shippingText": "...", "testimonials": [{"name": "...", "quote": "..."}]},
                 "pricing": [{"planName": "...", "price": "...", "benefits": ["...", "..."]}],
-                "objections": [{"objection": "Manejo de objeción frecuente", "rebuttal": "Respuesta persuasiva"}],
-                "customSection": {"title": "Título de la sección pedida por el cliente", "content": "Contenido pedido por el cliente"},
+                "objections": [{"objection": "Objeción frecuente", "rebuttal": "Respuesta"}],
+                "customSection": {"title": "Título", "content": "Contenido"},
                 "footer": {"contact": "contacto@empresa.cl"}
             }
             """
 
         prompt_ingenieria += f"""
-        IMPORTANTE: Devuelve ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin comillas invertidas ni bloques de markdown (```json).
-        Debes seguir EXACTAMENTE esta estructura:
+        IMPORTANTE: Devuelve ÚNICAMENTE un objeto JSON válido. Sigue EXACTAMENTE esta estructura:
         {estructura_json}
         """
 
-        # Llamada a la IA
         response = client.chat.completions.create(
             model=modelo_elegido, 
             messages=[
@@ -146,13 +136,13 @@ async def generate_landing(data: ProjectData):
 
         respuesta_ia = response.choices[0].message.content
 
-        # Limpieza robusta del JSON
-        respuesta_limpia = re.sub(r'^```json\s*', '', respuesta_ia)
-        respuesta_limpia = re.sub(r'^```\s*', '', respuesta_limpia)
-        respuesta_limpia = re.sub(r'\s*```$', '', respuesta_limpia)
-        respuesta_limpia = respuesta_limpia.strip()
+        # Extracción segura a prueba de errores
+        match = re.search(r'\{.*\}', respuesta_ia, re.DOTALL)
+        if match:
+            respuesta_limpia = match.group(0)
+        else:
+            respuesta_limpia = respuesta_ia
 
-        # Parseo seguro
         try:
             ai_metadata_json = json.loads(respuesta_limpia)
         except json.JSONDecodeError:
@@ -166,9 +156,10 @@ async def generate_landing(data: ProjectData):
             "projectId": data.projectId,
             "plan_usado": plan_usuario,
             "ai_engine": modelo_elegido,
-            "aiMetadata": ai_metadata_json # JSON escalado y estructurado
+            "aiMetadata": ai_metadata_json 
         }
         
     except Exception as e:
-        print(f"Error en la IA: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error al comunicarse con la IA: {str(e)}")
+        error_details = traceback.format_exc()
+        print(f"Error Crítico en la IA:\n{error_details}")
+        raise HTTPException(status_code=500, detail=f"Error interno IA: {str(e)}")
