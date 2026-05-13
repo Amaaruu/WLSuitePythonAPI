@@ -17,19 +17,10 @@ client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
 )
 
-class ProjectData(BaseModel):
-    projectId: int
-    userPlan: str
-    projectName: str
-    projectIdea: str
-    callToAction: str
-    businessSector: Optional[str] = None
-    communicationTone: Optional[str] = None
-    colorPalette: Optional[str] = None
-    visualStyle: Optional[str] = None
-    animationLevel: Optional[str] = None
-    customPrompt: Optional[str] = None
 
+# ─────────────────────────────────────────────────────────────────────────────
+# MODELOS Y ALIASES DE PLAN
+# ─────────────────────────────────────────────────────────────────────────────
 
 PLAN_ALIASES = {
     "BASICO": "BASIC", "BÁSICO": "BASIC",
@@ -50,127 +41,121 @@ PLAN_FALLBACK = "BASIC"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# PROMPTS DE SISTEMA — uno por plan, cada uno con un rol y objetivo claro
+# MODELO DE DATOS
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ProjectData(BaseModel):
+    projectId: int
+    userPlan: str
+    projectName: str
+    projectIdea: str
+    callToAction: str
+    businessSector: Optional[str] = None
+    communicationTone: Optional[str] = None
+    colorPalette: Optional[str] = None
+    visualStyle: Optional[str] = None
+    animationLevel: Optional[str] = None
+    customPrompt: Optional[str] = None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SYSTEM PROMPTS POR PLAN
 # ─────────────────────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT_BASIC = """
-Eres un experto en marketing digital y diseño web especializado en crear landing pages 
+Eres un experto en marketing digital y diseño web especializado en crear landing pages
 de alta conversión para pequeños negocios en Chile.
 
-Tu trabajo es generar el contenido estratégico y copywriting para una landing page 
+Tu trabajo es generar el contenido estratégico y copywriting para una landing page
 profesional de un solo producto o servicio.
 
 PRINCIPIOS DE CALIDAD QUE DEBES APLICAR SIEMPRE:
-- El headline debe ser el texto más poderoso de la página: claro, específico y orientado al beneficio. 
-  Evita títulos genéricos. Máximo 10 palabras. Ejemplo de malo: "Bienvenidos a nuestra empresa". 
-  Ejemplo de bueno: "Frutas y verduras frescas directo al campo, entregadas en tu puerta".
-- El subheadline expande el headline con el beneficio principal y elimina la principal duda del cliente. 
-  2-3 oraciones máximo.
-- El CTA debe ser un verbo de acción específico, no genérico. 
+- El headline debe ser el texto más poderoso de la página: claro, específico y orientado
+  al beneficio. Evita títulos genéricos. Máximo 10 palabras.
+  Malo: "Bienvenidos a nuestra empresa".
+  Bueno: "Frutas frescas directo del campo, entregadas en tu puerta hoy".
+- El subheadline expande el headline con el beneficio principal y elimina la duda
+  principal del cliente. 2-3 oraciones máximo.
+- El CTA debe ser un verbo de acción específico.
   Malo: "Enviar". Bueno: "Pedir mi caja de verduras ahora".
-- Las features deben describir BENEFICIOS reales para el cliente, no características técnicas. 
-  Cada una: título de 3-5 palabras + descripción de 1-2 oraciones concretas.
-- El footer debe tener un email de contacto realista y profesional basado en el nombre del negocio.
-- El contenido debe sonar humano, cercano y chileno. Sin lenguaje corporativo ni frases hechas.
-- Adapta el tono y vocabulario al tipo de negocio.
+- Las features describen BENEFICIOS reales, no características técnicas.
+  Cada una: emoji relevante + título 3-5 palabras + descripción 1-2 oraciones concretas.
+- El footer debe tener un email realista basado en el nombre del negocio.
+- Contenido humano, cercano y chileno. Sin lenguaje corporativo.
 
 FORMATO DE RESPUESTA:
 Devuelve ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
 """
 
 SYSTEM_PROMPT_INTERMEDIATE = """
-Eres un estratega de marketing digital y especialista en UX copywriting con experiencia 
-en negocios chilenos. Tu expertise incluye CRO (Conversion Rate Optimization), 
+Eres un estratega de marketing digital y especialista en UX copywriting con experiencia
+en negocios chilenos. Tu expertise incluye CRO (Conversion Rate Optimization),
 psicología del consumidor y arquitectura de información.
 
-Tu trabajo es generar el contenido completo y estratégico para una landing page 
+Tu trabajo es generar el contenido completo y estratégico para una landing page
 profesional de alta conversión.
 
 PRINCIPIOS ESTRATÉGICOS QUE DEBES APLICAR:
 
 HERO SECTION:
 - Headline: poderoso, específico, orientado al beneficio principal. Máximo 10 palabras.
-  Usa la fórmula: [Resultado deseado] + [Diferenciador] + [Para quién].
+  Fórmula: [Resultado deseado] + [Diferenciador] + [Para quién].
 - Subheadline: elimina la principal objeción y refuerza la propuesta de valor. 2-3 oraciones.
-- CTA: verbo de acción + beneficio inmediato. Ejemplo: "Recibir mi primera caja hoy".
+- CTA: verbo de acción + beneficio inmediato.
+- badge: etiqueta corta de credibilidad (Ej: "+200 clientes satisfechos").
 
 FEATURES (mínimo 3, idealmente 4):
 - Cada feature = un beneficio real, no una característica.
-- Estructura: ícono emoji relevante + título 3-5 palabras + descripción 2 oraciones concretas.
+- Estructura: emoji relevante + título 3-5 palabras + descripción 2 oraciones concretas.
 - Orden: del beneficio más importante al menos importante.
 
 SOCIAL PROOF:
-- urgencyText: genera urgencia real y creíble (escasez, tiempo limitado, demanda alta).
-  Ejemplo: "Solo quedan 8 cajas disponibles esta semana".
-- shippingText: beneficio logístico concreto. Ejemplo: "Despacho gratis en Santiago en 24h".
+- urgencyText: urgencia real y creíble (escasez, tiempo limitado, demanda alta).
+- shippingText: beneficio logístico concreto.
 
 FAQ (mínimo 3 preguntas):
-- Responde las dudas reales que impiden la compra.
-- Las preguntas deben ser las que un cliente real haría antes de comprar.
-- Las respuestas deben ser cortas, directas y tranquilizadoras.
+- Las preguntas más frecuentes que impiden la compra.
+- Respuestas cortas, directas y tranquilizadoras.
 
-TONO:
-- Adapta completamente el lenguaje al sector y tono de comunicación indicado.
-- Chileno, humano, concreto. Sin corporativismos.
+TONO: Chileno, humano, concreto. Sin corporativismos. Adaptado al sector indicado.
 
 FORMATO DE RESPUESTA:
 Devuelve ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
 """
 
 SYSTEM_PROMPT_PREMIUM = """
-Eres un director creativo y estratega de conversión de clase mundial, especializado en 
+Eres un director creativo y estratega de conversión de clase mundial, especializado en
 landing pages premium para el mercado latinoamericano. Combinas expertise en:
 - Copywriting persuasivo y psicología del consumidor
-- Diseño UX/UI y arquitectura de experiencias digitales  
+- Diseño UX/UI y arquitectura de experiencias digitales
 - Estrategia de marca y posicionamiento
 - CRO avanzado y optimización de embudos de venta
 
-Tu trabajo es generar el contenido más completo, sofisticado y persuasivo posible para 
-una landing page premium que destaque frente a la competencia.
-
 ESTÁNDARES DE CALIDAD PREMIUM:
 
-HERO SECTION — Primera impresión que no se puede fallar:
-- Headline: el mejor texto de toda la página. Debe generar deseo inmediato.
-  Fórmula avanzada: [Emoción/Resultado] + [Diferenciador único] + [Credibilidad implícita].
-  Máximo 10 palabras. Sin clichés. Sin palabras vacías.
-- Subheadline: 2-3 oraciones que expanden el headline, eliminan la duda principal 
-  y crean anticipación. Debe fluir naturalmente del headline.
-- CTA principal: específico, con urgencia implícita, orientado al resultado.
-- badge: una etiqueta corta de credibilidad (Ej: "⭐ Más de 500 clientes satisfechos", 
-  "#1 en Santiago", "Desde 2018").
+HERO SECTION:
+- Headline: el mejor texto de toda la página. Genera deseo inmediato.
+  Fórmula: [Emoción/Resultado] + [Diferenciador único] + [Credibilidad implícita]. Máx 10 palabras.
+- Subheadline: 2-3 oraciones que expanden el headline, eliminan la duda principal y crean anticipación.
+- CTA: específico, con urgencia implícita, orientado al resultado.
+- badge: etiqueta de autoridad (Ej: "⭐ +500 familias satisfechas desde 2019").
 
-FEATURES (mínimo 4, idealmente 5-6):
-- Cada feature comunica un beneficio emocional + funcional.
-- Estructura: emoji + título poderoso + descripción 2-3 oraciones ricas en detalles.
-- El conjunto debe contar una historia coherente del producto/servicio.
+FEATURES (mínimo 5):
+- Beneficio emocional + funcional por cada feature.
+- Emoji + título poderoso + descripción 2-3 oraciones ricas en detalles.
+- El conjunto cuenta una historia coherente del producto/servicio.
 
-SOCIAL PROOF — El motor de la confianza:
-- urgencyText: urgencia creíble y específica.
-- shippingText: beneficio logístico premium.
-- testimonials (mínimo 2): testimonios detallados y creíbles.
-  Cada uno con: nombre, cargo/contexto, cita específica con detalle concreto, ciudad.
-  Los testimonios deben mencionar resultados específicos, no ser genéricos.
+SOCIAL PROOF:
+- urgencyText y shippingText: específicos y creíbles.
+- testimonials (mínimo 2): detallados, con nombre chileno, contexto, cita con resultado específico, rating.
 
-PRICING (si aplica al negocio):
-- Solo incluir si el negocio tiene variantes de precio lógicas.
-- Si no aplica (ej: verdulería), usa esta sección para destacar un pack o promoción especial.
-- Cada opción con nombre creativo, precio, lista de beneficios y badge (recomendado, popular, etc).
+PRICING: Solo si aplica lógicamente al negocio. Si no (ej: verdulería), usar como sección de pack/promoción.
 
-OBJECTIONS — Elimina el miedo a comprar:
-- Mínimo 3 objeciones reales que el cliente típico tendría.
-- Las respuestas deben ser empáticas primero, luego racionales.
-- Orden: de la más común a la más específica.
+OBJECTIONS (mínimo 3): Objeciones reales. Respuestas empáticas primero, luego racionales.
 
-CUSTOM SECTION — Sección diferenciadora:
-- Si hay customPrompt del cliente, úsalo como guía principal.
-- Si no, crea una sección que sea el diferenciador único del negocio 
-  (historia de origen, proceso artesanal, garantía especial, etc).
+CUSTOM SECTION: Diferenciador único del negocio (historia, proceso, garantía especial).
 
-CONSISTENCIA VISUAL:
-- Asegúrate que el tono del copy sea coherente de principio a fin.
-- El estilo visual solicitado debe reflejarse en la energía del texto 
-  (minimalista = textos precisos y elegantes, bold = textos directos e impactantes).
+FAQ (mínimo 4): Preguntas específicas del sector con respuestas expertas.
 
 FORMATO DE RESPUESTA:
 Devuelve ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
@@ -178,7 +163,7 @@ Devuelve ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, 
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ESTRUCTURAS JSON — más ricas y con guías inline para el modelo
+# ESTRUCTURAS JSON POR PLAN
 # ─────────────────────────────────────────────────────────────────────────────
 
 ESTRUCTURA_BASIC = {
@@ -205,7 +190,7 @@ ESTRUCTURA_BASIC = {
         }
     ],
     "footer": {
-        "contact": "contacto@nombredelNegocio.cl",
+        "contact": "contacto@nombreDelNegocio.cl",
         "tagline": "Frase corta de cierre que refuerza la propuesta de valor"
     }
 }
@@ -221,7 +206,7 @@ ESTRUCTURA_INTERMEDIATE = {
         {
             "emoji": "🎯",
             "title": "Beneficio principal",
-            "description": "2 oraciones concretas sobre cómo esto mejora la vida/negocio del cliente"
+            "description": "2 oraciones concretas sobre cómo esto mejora la vida del cliente"
         },
         {
             "emoji": "⚡",
@@ -359,7 +344,7 @@ ESTRUCTURA_PREMIUM = {
     "customSection": {
         "title": "Título de la sección diferenciadora del negocio",
         "subtitle": "Subtítulo que complementa y da contexto",
-        "content": "Contenido rico y detallado (3-4 oraciones) sobre el diferenciador único: historia de origen, proceso artesanal, misión, garantía especial, o lo que el customPrompt indique",
+        "content": "Contenido rico (3-4 oraciones) sobre el diferenciador único: historia, proceso, garantía especial",
         "ctaButton": "CTA de esta sección"
     },
     "faq": [
@@ -391,6 +376,10 @@ ESTRUCTURA_PREMIUM = {
 }
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# ENDPOINTS
+# ─────────────────────────────────────────────────────────────────────────────
+
 @app.get("/")
 def home():
     return {"message": "Motor de IA Multimodelo Activo con Progressive Disclosure"}
@@ -399,7 +388,8 @@ def home():
 @app.post("/api/v1/ai/generate")
 async def generate_landing(data: ProjectData):
     try:
-        # ── 1. Normalizar plan
+
+        # Normalizar plan
         plan_raw = (data.userPlan or "").strip()
         plan_normalizado = PLAN_ALIASES.get(plan_raw) or PLAN_ALIASES.get(plan_raw.upper())
 
@@ -412,22 +402,29 @@ async def generate_landing(data: ProjectData):
         print(f"[{plan_normalizado}] Generando landing para: {data.projectName}")
         print(f"Usando el motor: {modelo_elegido}")
 
-        # ── 2. Seleccionar system prompt y estructura por plan
+        # Seleccionar system prompt y estructura base por plan
         if plan_normalizado == "BASIC":
             system_prompt = SYSTEM_PROMPT_BASIC
-            estructura = ESTRUCTURA_BASIC
+            estructura_base = ESTRUCTURA_BASIC
         elif plan_normalizado == "INTERMEDIATE":
             system_prompt = SYSTEM_PROMPT_INTERMEDIATE
-            estructura = ESTRUCTURA_INTERMEDIATE
+            estructura_base = ESTRUCTURA_INTERMEDIATE
         else:
             system_prompt = SYSTEM_PROMPT_PREMIUM
-            estructura = ESTRUCTURA_PREMIUM
+            estructura_base = ESTRUCTURA_PREMIUM
 
-        # ── 3. Construir el user prompt con todo el contexto del negocio
+        # Resolver paleta y construir estructura con theme dinámico
+        paletas_disponibles = ["Modern Blue", "Nature Green", "Minimal Dark", "Warm Coral"]
+        palette = data.colorPalette if data.colorPalette in paletas_disponibles else "Modern Blue"
+
+        # Inyectar theme como primer campo del JSON
+        estructura = {"theme": {"colorPalette": palette}, **estructura_base}
+
+        # Construir contexto del negocio
         contexto_negocio = f"""
 INFORMACIÓN DEL NEGOCIO:
 - Nombre: {data.projectName}
-- Descripción: {data.projectIdea}
+- Descripción / Propuesta de valor: {data.projectIdea}
 - Call to Action deseado: {data.callToAction}
 - Mercado objetivo: Chile"""
 
@@ -435,7 +432,7 @@ INFORMACIÓN DEL NEGOCIO:
             contexto_negocio += f"""
 - Sector de la industria: {data.businessSector or 'No especificado'}
 - Tono de comunicación de la marca: {data.communicationTone or 'Profesional'}
-- Paleta de colores / Identidad visual: {data.colorPalette or 'No especificado'}"""
+- Paleta de colores seleccionada: {palette}"""
 
         if plan_normalizado == "PREMIUM":
             contexto_negocio += f"""
@@ -444,9 +441,11 @@ INFORMACIÓN DEL NEGOCIO:
             if data.customPrompt:
                 contexto_negocio += f"""
 
-INSTRUCCIÓN ESPECIAL DEL CLIENTE (prioridad máxima — intégrala en customSection y donde sea relevante):
-{data.customPrompt}"""
+⚠️ INSTRUCCIÓN ESPECIAL DEL CLIENTE (prioridad máxima):
+{data.customPrompt}
+Intégrala en el customSection y donde sea relevante."""
 
+        # ── 5. Construir user prompt completo ─────────────────────────────────
         estructura_str = json.dumps(estructura, ensure_ascii=False, indent=2)
 
         user_prompt = f"""{contexto_negocio}
@@ -457,20 +456,27 @@ Aplica todos tus conocimientos de copywriting, CRO y estrategia de marca.
 El contenido debe ser 100% específico para este negocio — nunca genérico.
 Adapta el tono, vocabulario y ejemplos al sector y tipo de cliente de este negocio.
 
+⚠️ SOBRE EL CAMPO "theme":
+El JSON ya incluye el campo "theme.colorPalette" con el valor "{palette}".
+NO lo modifiques. Déjalo exactamente como está en la estructura.
+El sistema de renderizado lo usa para aplicar todos los colores de la página automáticamente.
+
 ESTRUCTURA JSON REQUERIDA:
-Sigue exactamente esta estructura. Las descripciones entre comillas son guías — reemplázalas con contenido real:
+Sigue exactamente esta estructura. Los textos descriptivos entre comillas son guías:
+reemplázalos con contenido real, específico y de alta calidad para este negocio.
 
 {estructura_str}
 
 REGLAS ESTRICTAS:
 1. Devuelve ÚNICAMENTE el objeto JSON. Sin texto antes ni después.
-2. Sin bloques de código markdown (no uses ```json).
+2. Sin bloques de código markdown (no uses ```json ni ```).
 3. Todo el contenido en español chileno.
-4. Todos los campos deben tener contenido real y específico — nunca dejes placeholders.
+4. Todos los campos deben tener contenido real — nunca dejes los textos guía como respuesta.
 5. El email del footer debe ser realista basado en el nombre del negocio.
-6. Los emojis en features deben ser relevantes al beneficio que describen."""
+6. Los emojis en features deben ser relevantes al beneficio que describen.
+7. El campo "theme" debe quedar idéntico a como aparece en la estructura de arriba."""
 
-        # ── 4. Llamada al modelo con system prompt separado
+        # Llamada al modelo
         response = client.chat.completions.create(
             model=modelo_elegido,
             max_tokens=2048,
@@ -482,12 +488,11 @@ REGLAS ESTRICTAS:
 
         respuesta_ia = response.choices[0].message.content
 
-        # ── 5. Extracción robusta del JSON
-        # Primero intentar parsear directo
+        # Extracción robusta del JSON 
         try:
             ai_metadata_json = json.loads(respuesta_ia.strip())
         except json.JSONDecodeError:
-            # Buscar bloque JSON dentro del texto
+            # Intento 2: buscar bloque JSON dentro del texto
             match = re.search(r'\{.*\}', respuesta_ia, re.DOTALL)
             if match:
                 try:
@@ -503,13 +508,17 @@ REGLAS ESTRICTAS:
                     "raw_response": respuesta_ia
                 }
 
+        # Garantizar que el theme siempre esté presente ─────────────────
+        if isinstance(ai_metadata_json, dict) and "error" not in ai_metadata_json:
+            ai_metadata_json["theme"] = {"colorPalette": palette}
+
         return {
-            "status": "success",
-            "projectId": data.projectId,
-            "plan_usado": plan_normalizado,
+            "status":       "success",
+            "projectId":    data.projectId,
+            "plan_usado":   plan_normalizado,
             "plan_recibido": plan_raw,
-            "ai_engine": modelo_elegido,
-            "aiMetadata": ai_metadata_json
+            "ai_engine":    modelo_elegido,
+            "aiMetadata":   ai_metadata_json
         }
 
     except Exception as e:
