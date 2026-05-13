@@ -10,39 +10,157 @@ from openai import OpenAI
 
 load_dotenv()
 
-app = FastAPI(title="WLSuite AI Engine - Progressive Disclosure")
+app = FastAPI(title="WLSuite AI Engine v2 — Rich Context")
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=os.getenv("OPENROUTER_API_KEY"),
 )
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# MODELOS Y ALIASES DE PLAN
-# ─────────────────────────────────────────────────────────────────────────────
-
-PLAN_ALIASES = {
-    "BASICO": "BASIC", "BÁSICO": "BASIC",
-    "INTERMEDIO": "INTERMEDIATE",
-    "PREMIUM": "PREMIUM",
-    "BASIC": "BASIC", "INTERMEDIATE": "INTERMEDIATE",
-    "basico": "BASIC", "básico": "BASIC",
-    "intermedio": "INTERMEDIATE", "premium": "PREMIUM",
-}
-
+# ── Modelos por plan ──────────────────────────────────────────────────────────
 MODELOS_IA = {
     "BASIC":        "google/gemini-2.5-flash-lite",
     "INTERMEDIATE": "openai/gpt-4o-mini",
-    "PREMIUM":      "anthropic/claude-sonnet-4-5",
+    "PREMIUM":      "anthropic/claude-3.5-sonnet",
 }
 
-PLAN_FALLBACK = "BASIC"
+# ── Mapas semánticos: token del selector → instrucción en lenguaje natural ────
+# Esto es lo más importante. Traduce cada valor del formulario
+# en una instrucción que el modelo realmente comprende.
+
+SECTOR_MAP = {
+    "gastronomia":      "negocio gastronómico (restaurant, café, pastelería o similar)",
+    "tecnologia":       "empresa o producto tecnológico (SaaS, app, servicio digital)",
+    "salud":            "negocio del área de salud o bienestar (clínica, terapias, nutrición)",
+    "educacion":        "plataforma o servicio educativo (cursos, tutorías, academia)",
+    "moda":             "marca de moda, ropa, accesorios o estilo de vida",
+    "fitness":          "negocio de fitness, deporte o entrenamiento físico",
+    "legal":            "estudio jurídico o servicio legal profesional",
+    "inmobiliaria":     "empresa o agente inmobiliario",
+    "turismo":          "agencia de viajes, tours o alojamiento turístico",
+    "ecommerce":        "tienda online o comercio electrónico generalista",
+    "fintech":          "servicio financiero o fintech (pagos, inversión, crédito)",
+    "consultoria":      "consultora o servicios de asesoría profesional",
+    "construccion":     "empresa de construcción, arquitectura o remodelación",
+    "belleza":          "salón de belleza, estética, cuidado personal o cosmética",
+    "mascotas":         "negocio orientado al cuidado o productos para mascotas",
+    "eventos":          "organización de eventos, bodas, celebraciones o entretenimiento",
+    "arte":             "creador, artista, fotógrafo o agencia creativa",
+    "automotriz":       "concesionario, taller mecánico o servicio automotriz",
+    "ong":              "organización sin fines de lucro o causa social",
+    "otro":             "negocio de propósito general",
+}
+
+LANDING_GOAL_MAP = {
+    "leads":     "capturar datos de contacto de prospectos interesados (generación de leads)",
+    "ventas":    "concretar ventas directas del producto o servicio",
+    "reservas":  "recibir reservas o agendamientos de hora/mesa/sesión",
+    "informar":  "informar y educar al visitante sobre el negocio o producto",
+    "descargas": "promover la descarga de una app, ebook o recurso gratuito",
+    "registro":  "lograr que el usuario se registre o cree una cuenta",
+}
+
+TARGET_AUDIENCE_MAP = {
+    "jovenes":         "jóvenes adultos de 18–28 años, nativos digitales, lenguaje informal y aspiracional",
+    "adultos":         "adultos de 30–50 años, valoran la practicidad, lenguaje directo y claro",
+    "adultos-mayores": "personas de 55+ años, prefieren claridad extrema, sin jerga técnica",
+    "empresas":        "tomadores de decisión en empresas (B2B), lenguaje técnico y orientado a ROI",
+    "profesionales":   "profesionales independientes o ejecutivos, lenguaje sofisticado y eficiente",
+    "padres":          "padres y madres de familia, lenguaje cálido, enfocado en seguridad y confianza",
+    "emprendedores":   "emprendedores y fundadores, lenguaje motivador, orientado a resultados",
+}
+
+BRAND_POSITIONING_MAP = {
+    "economico":       "posicionamiento de precio bajo, accesible para todos, énfasis en ahorro",
+    "calidad-precio":  "mejor relación calidad-precio del mercado, equilibrio entre costo y valor",
+    "premium":         "marca premium, calidad superior, dispuesta a pagar más por mejores resultados",
+    "lujo":            "marca de lujo exclusiva, experiencia aspiracional, precio no es objeción",
+}
+
+BRAND_STAGE_MAP = {
+    "nueva-marca":    "marca nueva que se presenta al mercado por primera vez",
+    "establecida":    "marca con trayectoria y reconocimiento en su mercado",
+    "relanzamiento":  "marca que se renueva y vuelve con nueva propuesta de valor",
+}
+
+TONE_MAP = {
+    "profesional": "Tono profesional, confiable, preciso. Sin informalidades.",
+    "cercano":     "Tono cercano y conversacional, como hablarle a un amigo inteligente.",
+    "elegante":    "Tono elegante y sofisticado. Palabras cuidadas, frases bien construidas.",
+    "jovial":      "Tono jovial, divertido, con energía. Puede usar humor ligero.",
+    "inspirador":  "Tono inspirador y motivacional, enfocado en el potencial del cliente.",
+    "tecnico":     "Tono técnico y especializado, directo a expertos en el área.",
+}
+
+FORMALITY_MAP = {
+    "formal":      "Usa usted, lenguaje formal, sin contracciones.",
+    "semi-formal": "Tuteo respetuoso, amable pero sin exceso de informalidad.",
+    "informal":    "Tuteando directamente, lenguaje coloquial y cercano.",
+}
+
+VISUAL_STYLE_MAP = {
+    "minimalista":  "estética minimalista: mucho espacio en blanco, tipografía limpia, pocos elementos, cada elemento con propósito claro",
+    "moderno":      "diseño moderno y contemporáneo: líneas limpias, geometría plana, colores frescos",
+    "corporativo":  "diseño corporativo serio: azules institucionales, estructura rígida, aspecto formal y confiable",
+    "futurista":    "estética futurista y tecnológica: dark mode, acentos neón o cian, elementos geométricos angulares",
+    "elegante":     "diseño de alta gama: paleta reducida de colores neutros o oscuros, tipografía serif, mucho aire",
+    "organico":     "estética orgánica y natural: colores de tierra, formas curvas, sensación cálida y humana",
+    "audaz":        "diseño audaz y llamativo: contrastes altos, tipografía display, impacto visual inmediato",
+    "retro":        "estética retro o vintage: paletas desaturadas, tipografías con carácter, nostalgia controlada",
+}
+
+TYPOGRAPHY_MAP = {
+    "geometrica":      "tipografía geométrica sans-serif (estilo Futura, Montserrat, Poppins): moderna, limpia, técnica",
+    "sans-humanista":  "tipografía sans-serif humanista (estilo Inter, DM Sans): muy legible, amigable, versátil",
+    "serif-clasico":   "tipografía serif clásica (estilo Playfair, Lora, Cormorant): elegante, literaria, premium",
+    "display":         "tipografía display de alto impacto para títulos (estilo Space Grotesk, Clash Display): personalidad fuerte",
+    "monospace":       "tipografía monoespaciada (estilo JetBrains Mono, Fira Code): para marcas tech o dev",
+}
+
+BUTTON_SHAPE_MAP = {
+    "cuadrado":    "botones con bordes rectos (border-radius 0–4px)",
+    "redondeado":  "botones con esquinas ligeramente redondeadas (border-radius 8–12px)",
+    "pildora":     "botones en forma de píldora (border-radius 999px)",
+}
+
+BUTTON_STYLE_MAP = {
+    "solido":    "botones de fondo sólido con color de relleno fuerte",
+    "outline":   "botones tipo outline, solo borde visible sin relleno",
+    "ghost":     "botones ghost, casi transparentes con hover de relleno",
+    "gradiente": "botones con fondo degradado entre color primario y secundario",
+}
+
+ANIMATION_MAP = {
+    "ninguna":   "sin ningún tipo de animación, página completamente estática",
+    "sutil":     "animaciones muy suaves: fade-in simple en carga, sin distracciones",
+    "moderada":  "animaciones moderadas: elementos aparecen al hacer scroll, hover suaves",
+    "expresiva": "animaciones expresivas y vivas: transiciones fluidas, efectos de paralaje, microinteracciones notorias",
+}
+
+CREATIVITY_MAP = {
+    "conservadora":   "sigue las convenciones de diseño web estándar, no experimentes con estructuras inusuales",
+    "equilibrada":    "mezcla creatividad con convención, propón algo fresco pero reconocible",
+    "experimental":   "sé creativo y audaz, propón estructuras inesperadas, jerarquías visuales originales",
+}
+
+LAYOUT_MAP = {
+    "centrado":    "layout centrado en columna única, contenido bien enmarcado al centro",
+    "asimetrico":  "layout asimétrico con texto a la izquierda e imágenes/gráficos a la derecha (o viceversa)",
+    "full-width":  "secciones de ancho completo, elementos que sangran hasta los bordes",
+    "tarjetas":    "contenido organizado en grillas de tarjetas (cards) para cada feature o beneficio",
+}
+
+SECTIONS_LABELS = {
+    "hero":         "Hero principal con headline, subtítulo y CTA destacado",
+    "features":     "Sección de características o beneficios clave (mínimo 3)",
+    "testimonials": "Testimonios o prueba social de clientes reales",
+    "faq":          "Sección de preguntas frecuentes con respuestas concisas",
+    "pricing":      "Tabla o sección de precios y planes",
+    "urgency":      "Sección de urgencia, escasez o promoción con límite de tiempo",
+}
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# MODELO DE DATOS
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Modelo Pydantic ───────────────────────────────────────────────────────────
 
 class ProjectData(BaseModel):
     projectId: int
@@ -50,478 +168,270 @@ class ProjectData(BaseModel):
     projectName: str
     projectIdea: str
     callToAction: str
-    businessSector: Optional[str] = None
+
+    # Plan Básico nuevos
+    businessSector:   Optional[str] = None
+    landingGoal:      Optional[str] = None
+    targetAudience:   Optional[str] = None
+    brandPositioning: Optional[str] = None
+    brandStage:       Optional[str] = None
+    valueProposition: Optional[str] = None
+
+    # Intermedio
     communicationTone: Optional[str] = None
-    colorPalette: Optional[str] = None
-    visualStyle: Optional[str] = None
-    animationLevel: Optional[str] = None
-    customPrompt: Optional[str] = None
+    formalityLevel:    Optional[str] = None
+
+    # Intermedio+ desde designPreferences
+    primaryColor:        Optional[str] = None
+    secondaryColor:      Optional[str] = None
+    baseMode:            Optional[str] = None
+    contrastLevel:       Optional[str] = None
+    visualStyle:         Optional[str] = None
+    typographyHierarchy: Optional[str] = None
+    visualDensity:       Optional[str] = None
+    sectionDividers:     Optional[str] = None
+    sections:            Optional[str] = None   # CSV: "hero,features,testimonials"
+
+    # Premium
+    typographyStyle: Optional[str] = None
+    buttonShape:     Optional[str] = None
+    buttonStyle:     Optional[str] = None
+    iconStyle:       Optional[str] = None
+    layoutType:      Optional[str] = None
+    creativityLevel: Optional[str] = None
+    animationLevel:  Optional[str] = None
+    scrollEffect:    Optional[str] = None
+    heroEffect:      Optional[str] = None
+    hoverIntensity:  Optional[str] = None
+    contentDensity:  Optional[str] = None
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# SYSTEM PROMPTS POR PLAN
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Constructor de prompts ────────────────────────────────────────────────────
 
-SYSTEM_PROMPT_BASIC = """
-Eres un experto en marketing digital y diseño web especializado en crear landing pages
-de alta conversión para pequeños negocios en Chile.
+def build_prompt(data: ProjectData, plan: str) -> str:
+    """
+    Construye el prompt de ingeniería a partir de los tokens del formulario.
+    Cada valor del selector se traduce a lenguaje natural usando los mapas.
+    """
 
-Tu trabajo es generar el contenido estratégico y copywriting para una landing page
-profesional de un solo producto o servicio.
+    # Resuelve los tokens semánticos
+    sector      = SECTOR_MAP.get(data.businessSector or "", "negocio")
+    goal        = LANDING_GOAL_MAP.get(data.landingGoal or "", "informar al visitante")
+    audience    = TARGET_AUDIENCE_MAP.get(data.targetAudience or "", "público general")
+    positioning = BRAND_POSITIONING_MAP.get(data.brandPositioning or "", "relación calidad-precio")
+    stage       = BRAND_STAGE_MAP.get(data.brandStage or "", "marca establecida")
+    tone        = TONE_MAP.get(data.communicationTone or "", "Tono profesional y claro.")
+    formality   = FORMALITY_MAP.get(data.formalityLevel or "", "Tuteo respetuoso.")
+    v_style     = VISUAL_STYLE_MAP.get(data.visualStyle or "", "diseño moderno y limpio")
+    typo        = TYPOGRAPHY_MAP.get(data.typographyStyle or "", "tipografía sans-serif humanista")
+    btn_shape   = BUTTON_SHAPE_MAP.get(data.buttonShape or "", "botones redondeados")
+    btn_style   = BUTTON_STYLE_MAP.get(data.buttonStyle or "", "botones sólidos")
+    anim        = ANIMATION_MAP.get(data.animationLevel or "", "animaciones sutiles")
+    creativity  = CREATIVITY_MAP.get(data.creativityLevel or "", "diseño equilibrado")
+    layout      = LAYOUT_MAP.get(data.layoutType or "", "layout centrado")
 
-PRINCIPIOS DE CALIDAD QUE DEBES APLICAR SIEMPRE:
-- El headline debe ser el texto más poderoso de la página: claro, específico y orientado
-  al beneficio. Evita títulos genéricos. Máximo 10 palabras.
-  Malo: "Bienvenidos a nuestra empresa".
-  Bueno: "Frutas frescas directo del campo, entregadas en tu puerta hoy".
-- El subheadline expande el headline con el beneficio principal y elimina la duda
-  principal del cliente. 2-3 oraciones máximo.
-- El CTA debe ser un verbo de acción específico.
-  Malo: "Enviar". Bueno: "Pedir mi caja de verduras ahora".
-- Las features describen BENEFICIOS reales, no características técnicas.
-  Cada una: emoji relevante + título 3-5 palabras + descripción 1-2 oraciones concretas.
-- El footer debe tener un email realista basado en el nombre del negocio.
-- Contenido humano, cercano y chileno. Sin lenguaje corporativo.
+    # Traduce las secciones activas
+    sections_csv  = data.sections or "hero,features,footer"
+    sections_list = [s.strip() for s in sections_csv.split(",") if s.strip()]
+    sections_desc = "\n".join(
+        f"  - {SECTIONS_LABELS.get(s, s)}"
+        for s in sections_list
+    )
 
-FORMATO DE RESPUESTA:
-Devuelve ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
+    # ── Bloque base — todos los planes ───────────────────────────────────────
+    prompt = f"""Eres un Copywriter experto en CRO (Conversion Rate Optimization) y diseño web de alta conversión.
+Tu tarea es estructurar los textos persuasivos de una landing page para el siguiente negocio.
+
+=== CONTEXTO DEL NEGOCIO ===
+Nombre del proyecto: {data.projectName}
+Tipo de negocio: {sector}
+Propuesta de valor: {data.projectIdea}
+Etapa de la marca: {stage}
+Posicionamiento de precio: {positioning}
+Objetivo principal de la landing: {goal}
+Público objetivo: {audience}
+Llamado a la acción (CTA): {data.callToAction}
 """
 
-SYSTEM_PROMPT_INTERMEDIATE = """
-Eres un estratega de marketing digital y especialista en UX copywriting con experiencia
-en negocios chilenos. Tu expertise incluye CRO (Conversion Rate Optimization),
-psicología del consumidor y arquitectura de información.
+    if data.valueProposition:
+        prompt += f"Diferenciador clave del negocio: {data.valueProposition}\n"
 
-Tu trabajo es generar el contenido completo y estratégico para una landing page
-profesional de alta conversión.
+    # ── Bloque Intermedio+ ────────────────────────────────────────────────────
+    if plan in ["INTERMEDIATE", "PREMIUM"]:
+        prompt += f"""
+=== IDENTIDAD DE COMUNICACIÓN ===
+Tono de la marca: {tone}
+Nivel de formalidad: {formality}
+Paleta de color primaria: {data.primaryColor or 'azul marino'}
+Paleta de color secundaria: {data.secondaryColor or 'blanco'}
+Modo base: {data.baseMode or 'claro'}
+Nivel de contraste: {data.contrastLevel or 'estándar'}
+Estilo visual: {v_style}
+Densidad visual: {data.visualDensity or 'equilibrado'}
+Separación de secciones: {data.sectionDividers or 'limpia'}
 
-PRINCIPIOS ESTRATÉGICOS QUE DEBES APLICAR:
-
-HERO SECTION:
-- Headline: poderoso, específico, orientado al beneficio principal. Máximo 10 palabras.
-  Fórmula: [Resultado deseado] + [Diferenciador] + [Para quién].
-- Subheadline: elimina la principal objeción y refuerza la propuesta de valor. 2-3 oraciones.
-- CTA: verbo de acción + beneficio inmediato.
-- badge: etiqueta corta de credibilidad (Ej: "+200 clientes satisfechos").
-
-FEATURES (mínimo 3, idealmente 4):
-- Cada feature = un beneficio real, no una característica.
-- Estructura: emoji relevante + título 3-5 palabras + descripción 2 oraciones concretas.
-- Orden: del beneficio más importante al menos importante.
-
-SOCIAL PROOF:
-- urgencyText: urgencia real y creíble (escasez, tiempo limitado, demanda alta).
-- shippingText: beneficio logístico concreto.
-
-FAQ (mínimo 3 preguntas):
-- Las preguntas más frecuentes que impiden la compra.
-- Respuestas cortas, directas y tranquilizadoras.
-
-TONO: Chileno, humano, concreto. Sin corporativismos. Adaptado al sector indicado.
-
-FORMATO DE RESPUESTA:
-Devuelve ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
+=== ESTRUCTURA DE SECCIONES SOLICITADA ===
+La landing debe incluir OBLIGATORIAMENTE estas secciones en este orden:
+{sections_desc}
 """
 
-SYSTEM_PROMPT_PREMIUM = """
-Eres un director creativo y estratega de conversión de clase mundial, especializado en
-landing pages premium para el mercado latinoamericano. Combinas expertise en:
-- Copywriting persuasivo y psicología del consumidor
-- Diseño UX/UI y arquitectura de experiencias digitales
-- Estrategia de marca y posicionamiento
-- CRO avanzado y optimización de embudos de venta
-
-ESTÁNDARES DE CALIDAD PREMIUM:
-
-HERO SECTION:
-- Headline: el mejor texto de toda la página. Genera deseo inmediato.
-  Fórmula: [Emoción/Resultado] + [Diferenciador único] + [Credibilidad implícita]. Máx 10 palabras.
-- Subheadline: 2-3 oraciones que expanden el headline, eliminan la duda principal y crean anticipación.
-- CTA: específico, con urgencia implícita, orientado al resultado.
-- badge: etiqueta de autoridad (Ej: "⭐ +500 familias satisfechas desde 2019").
-
-FEATURES (mínimo 5):
-- Beneficio emocional + funcional por cada feature.
-- Emoji + título poderoso + descripción 2-3 oraciones ricas en detalles.
-- El conjunto cuenta una historia coherente del producto/servicio.
-
-SOCIAL PROOF:
-- urgencyText y shippingText: específicos y creíbles.
-- testimonials (mínimo 2): detallados, con nombre chileno, contexto, cita con resultado específico, rating.
-
-PRICING: Solo si aplica lógicamente al negocio. Si no (ej: verdulería), usar como sección de pack/promoción.
-
-OBJECTIONS (mínimo 3): Objeciones reales. Respuestas empáticas primero, luego racionales.
-
-CUSTOM SECTION: Diferenciador único del negocio (historia, proceso, garantía especial).
-
-FAQ (mínimo 4): Preguntas específicas del sector con respuestas expertas.
-
-FORMATO DE RESPUESTA:
-Devuelve ÚNICAMENTE un objeto JSON válido, sin texto adicional, sin markdown, sin explicaciones.
+    # ── Bloque Premium ────────────────────────────────────────────────────────
+    if plan == "PREMIUM":
+        prompt += f"""
+=== DIRECTRICES AVANZADAS DE DISEÑO ===
+Tipografía: {typo}
+Jerarquía tipográfica: {data.typographyHierarchy or 'equilibrada'}
+Tipo de layout: {layout}
+Forma de botones: {btn_shape}
+Estilo de botones: {btn_style}
+Estilo de íconos: {data.iconStyle or 'outline'}
+Nivel de animaciones: {anim}
+Efecto de scroll: {data.scrollEffect or 'fade-in'}
+Efecto en hero: {data.heroEffect or 'ninguno'}
+Intensidad de hover: {data.hoverIntensity or 'sutil'}
+Densidad de contenido: {data.contentDensity or 'equilibrado'}
+Nivel de creatividad permitido: {creativity}
 """
 
+    return prompt
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ESTRUCTURAS JSON POR PLAN
-# ─────────────────────────────────────────────────────────────────────────────
 
-ESTRUCTURA_BASIC = {
-    "hero": {
-        "headline": "Título poderoso orientado al beneficio principal (máx 10 palabras)",
-        "subheadline": "2-3 oraciones que expanden el headline y eliminan la duda principal del cliente",
-        "ctaButton": "Verbo de acción + beneficio (ej: Pedir mi caja ahora)"
-    },
-    "features": [
-        {
-            "emoji": "🎯",
-            "title": "Beneficio principal en 3-5 palabras",
-            "description": "Descripción concreta de 1-2 oraciones que explica el beneficio real para el cliente"
-        },
-        {
-            "emoji": "⚡",
-            "title": "Segundo beneficio clave",
-            "description": "Descripción concreta y específica del beneficio"
-        },
-        {
-            "emoji": "✅",
-            "title": "Tercer beneficio diferenciador",
-            "description": "Por qué esto importa para el cliente en su vida cotidiana"
+# ── Estructuras JSON por plan ─────────────────────────────────────────────────
+
+def get_json_structure(plan: str, sections_csv: str) -> str:
+    """
+    Devuelve la estructura JSON que debe respetar la respuesta del modelo.
+    Las secciones disponibles dependen del plan y de las selecciones del usuario.
+    """
+    sections = [s.strip() for s in sections_csv.split(",") if s.strip()]
+
+    base = {
+        "hero": {
+            "headline": "...",
+            "subheadline": "...",
+            "ctaButton": "..."
         }
-    ],
-    "footer": {
-        "contact": "contacto@nombreDelNegocio.cl",
-        "tagline": "Frase corta de cierre que refuerza la propuesta de valor"
     }
-}
 
-ESTRUCTURA_INTERMEDIATE = {
-    "hero": {
-        "headline": "Título poderoso orientado al beneficio principal (máx 10 palabras)",
-        "subheadline": "2-3 oraciones que expanden el headline, eliminan la duda principal y crean deseo",
-        "ctaButton": "Verbo de acción específico + beneficio inmediato",
-        "badge": "Etiqueta de credibilidad corta (ej: +200 clientes satisfechos)"
-    },
-    "features": [
-        {
-            "emoji": "🎯",
-            "title": "Beneficio principal",
-            "description": "2 oraciones concretas sobre cómo esto mejora la vida del cliente"
-        },
-        {
-            "emoji": "⚡",
-            "title": "Velocidad o conveniencia",
-            "description": "2 oraciones sobre el ahorro de tiempo o facilidad"
-        },
-        {
-            "emoji": "🏆",
-            "title": "Calidad o diferenciador",
-            "description": "2 oraciones sobre qué hace único a este negocio"
-        },
-        {
-            "emoji": "🤝",
-            "title": "Confianza o garantía",
-            "description": "2 oraciones sobre por qué es seguro comprar/contratar"
-        }
-    ],
-    "socialProof": {
-        "urgencyText": "Texto de urgencia creíble y específico (escasez o tiempo limitado)",
-        "shippingText": "Beneficio logístico concreto (despacho, tiempo, costo)"
-    },
-    "faq": [
-        {
-            "question": "La pregunta más frecuente antes de comprar",
-            "answer": "Respuesta directa, tranquilizadora y específica"
-        },
-        {
-            "question": "Pregunta sobre el proceso o cómo funciona",
-            "answer": "Explicación clara y simple del proceso"
-        },
-        {
-            "question": "Pregunta sobre garantía o qué pasa si no quedo satisfecho",
-            "answer": "Respuesta que elimine el riesgo percibido"
-        }
-    ],
-    "footer": {
-        "contact": "contacto@nombreDelNegocio.cl",
-        "tagline": "Frase de cierre que refuerza la propuesta de valor"
-    }
-}
-
-ESTRUCTURA_PREMIUM = {
-    "hero": {
-        "headline": "El mejor headline posible: poderoso, específico, orientado al resultado (máx 10 palabras)",
-        "subheadline": "2-3 oraciones que expanden el headline, eliminan la duda principal y generan anticipación",
-        "ctaButton": "CTA con verbo de acción + resultado esperado + urgencia implícita",
-        "badge": "Etiqueta de autoridad y credibilidad (ej: ⭐ +500 familias satisfechas desde 2019)"
-    },
-    "features": [
-        {
-            "emoji": "🥇",
-            "title": "Beneficio principal y más poderoso",
-            "description": "2-3 oraciones ricas en detalles sobre el beneficio emocional y funcional"
-        },
-        {
-            "emoji": "⚡",
-            "title": "Velocidad, frescura o inmediatez",
-            "description": "2-3 oraciones sobre la experiencia superior del cliente"
-        },
-        {
-            "emoji": "🌿",
-            "title": "Calidad, origen o proceso",
-            "description": "2-3 oraciones sobre el estándar de calidad y cómo se logra"
-        },
-        {
-            "emoji": "🤝",
-            "title": "Confianza y respaldo",
-            "description": "2-3 oraciones sobre la garantía, trayectoria o comunidad de clientes"
-        },
-        {
-            "emoji": "💎",
-            "title": "Diferenciador único y exclusivo",
-            "description": "2-3 oraciones sobre lo que nadie más en el mercado ofrece"
-        }
-    ],
-    "socialProof": {
-        "urgencyText": "Urgencia creíble, específica y basada en demanda real",
-        "shippingText": "Beneficio logístico premium con detalle (tiempo, costo, cobertura)",
-        "testimonials": [
-            {
-                "name": "Nombre real chileno",
-                "context": "Descripción del cliente (ej: Madre de familia, Santiago)",
-                "quote": "Testimonio detallado que menciona un resultado específico y concreto (2-3 oraciones)",
-                "rating": 5
-            },
-            {
-                "name": "Otro nombre real chileno",
-                "context": "Descripción del cliente (ej: Dueño de restaurante, Providencia)",
-                "quote": "Testimonio diferente que destaca otro aspecto positivo con detalle específico",
-                "rating": 5
-            }
+    if "features" in sections or plan in ["INTERMEDIATE", "PREMIUM"]:
+        base["features"] = [
+            {"title": "...", "description": "..."},
+            {"title": "...", "description": "..."},
+            {"title": "...", "description": "..."},
         ]
-    },
-    "pricing": [
-        {
-            "planName": "Nombre creativo del plan/producto base",
-            "badge": "",
-            "price": "Precio sugerido realista en CLP",
-            "period": "por semana / por unidad / etc",
-            "benefits": [
-                "Beneficio 1 concreto",
-                "Beneficio 2 concreto",
-                "Beneficio 3 concreto"
-            ],
-            "ctaButton": "CTA específico para este plan"
-        },
-        {
-            "planName": "Nombre creativo del plan/producto premium",
-            "badge": "Más popular",
-            "price": "Precio sugerido realista en CLP",
-            "period": "por semana / por unidad / etc",
-            "benefits": [
-                "Todo lo anterior",
-                "Beneficio extra 1",
-                "Beneficio extra 2",
-                "Beneficio extra 3"
-            ],
-            "ctaButton": "CTA específico para este plan"
+
+    if plan == "BASIC":
+        base["footer"] = {"contact": "contacto@empresa.cl"}
+        return json.dumps(base, ensure_ascii=False, indent=2)
+
+    if plan == "INTERMEDIATE":
+        if "testimonials" in sections:
+            base["socialProof"] = {
+                "urgencyText": "...",
+                "shippingText": "..."
+            }
+        if "faq" in sections:
+            base["faq"] = [
+                {"question": "...", "answer": "..."},
+                {"question": "...", "answer": "..."},
+            ]
+        base["footer"] = {"contact": "contacto@empresa.cl"}
+        return json.dumps(base, ensure_ascii=False, indent=2)
+
+    # PREMIUM
+    if "testimonials" in sections:
+        base["socialProof"] = {
+            "urgencyText": "...",
+            "shippingText": "...",
+            "testimonials": [
+                {"name": "...", "role": "...", "quote": "..."},
+                {"name": "...", "role": "...", "quote": "..."},
+            ]
         }
-    ],
-    "objections": [
-        {
-            "objection": "La objeción más común que impide la compra",
-            "rebuttal": "Respuesta empática primero, luego racional. 2-3 oraciones que eliminan el miedo."
-        },
-        {
-            "objection": "Objeción sobre precio o valor",
-            "rebuttal": "Respuesta que reenmarca el precio como inversión con resultado concreto"
-        },
-        {
-            "objection": "Objeción sobre confianza o experiencia previa negativa",
-            "rebuttal": "Respuesta empática que valida la experiencia y ofrece garantía diferenciadora"
-        }
-    ],
-    "customSection": {
-        "title": "Título de la sección diferenciadora del negocio",
-        "subtitle": "Subtítulo que complementa y da contexto",
-        "content": "Contenido rico (3-4 oraciones) sobre el diferenciador único: historia, proceso, garantía especial",
-        "ctaButton": "CTA de esta sección"
-    },
-    "faq": [
-        {
-            "question": "La pregunta más frecuente antes de comprar",
-            "answer": "Respuesta directa y tranquilizadora con detalle específico"
-        },
-        {
-            "question": "¿Cómo funciona el proceso de compra o entrega?",
-            "answer": "Explicación paso a paso, simple y clara"
-        },
-        {
-            "question": "¿Qué garantía tienen sus productos/servicios?",
-            "answer": "Garantía específica que elimine completamente el riesgo percibido"
-        },
-        {
-            "question": "Pregunta específica del sector o tipo de negocio",
-            "answer": "Respuesta detallada y experta que demuestre conocimiento del sector"
-        }
-    ],
-    "footer": {
-        "contact": "contacto@nombreDelNegocio.cl",
-        "tagline": "Frase de cierre poderosa que resume la propuesta de valor en una oración",
-        "socialLinks": {
-            "instagram": "@nombreDelNegocio",
-            "whatsapp": "+569XXXXXXXX"
-        }
-    }
-}
+    if "pricing" in sections:
+        base["pricing"] = [
+            {"planName": "...", "price": "...", "benefits": ["...", "...", "..."]}
+        ]
+    if "faq" in sections:
+        base["faq"] = [
+            {"question": "...", "answer": "..."},
+            {"question": "...", "answer": "..."},
+            {"question": "...", "answer": "..."},
+        ]
+    if "urgency" in sections:
+        base["urgency"] = {"title": "...", "countdown": "...", "ctaButton": "..."}
+
+    base["footer"] = {"contact": "contacto@empresa.cl"}
+    return json.dumps(base, ensure_ascii=False, indent=2)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ENDPOINTS
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Endpoint principal ────────────────────────────────────────────────────────
 
 @app.get("/")
 def home():
-    return {"message": "Motor de IA Multimodelo Activo con Progressive Disclosure"}
+    return {"message": "WLSuite AI Engine v2 — Rich Context activo"}
 
 
 @app.post("/api/v1/ai/generate")
 async def generate_landing(data: ProjectData):
     try:
+        plan = data.userPlan.upper()
+        model = MODELOS_IA.get(plan, MODELOS_IA["BASIC"])
+        sections_csv = data.sections or "hero,features,footer"
 
-        # Normalizar plan
-        plan_raw = (data.userPlan or "").strip()
-        plan_normalizado = PLAN_ALIASES.get(plan_raw) or PLAN_ALIASES.get(plan_raw.upper())
+        print(f"[{plan}] Generando landing para: {data.projectName} | Modelo: {model}")
 
-        if not plan_normalizado:
-            print(f"[WARN] Plan '{plan_raw}' no reconocido. Usando fallback '{PLAN_FALLBACK}'.")
-            plan_normalizado = PLAN_FALLBACK
+        # Construye el prompt semántico
+        prompt = build_prompt(data, plan)
 
-        modelo_elegido = MODELOS_IA[plan_normalizado]
+        # Obtiene la estructura JSON esperada
+        json_structure = get_json_structure(plan, sections_csv)
 
-        print(f"[{plan_normalizado}] Generando landing para: {data.projectName}")
-        print(f"Usando el motor: {modelo_elegido}")
+        # Instrucción final al modelo
+        full_prompt = f"""{prompt}
 
-        # Seleccionar system prompt y estructura base por plan
-        if plan_normalizado == "BASIC":
-            system_prompt = SYSTEM_PROMPT_BASIC
-            estructura_base = ESTRUCTURA_BASIC
-        elif plan_normalizado == "INTERMEDIATE":
-            system_prompt = SYSTEM_PROMPT_INTERMEDIATE
-            estructura_base = ESTRUCTURA_INTERMEDIATE
-        else:
-            system_prompt = SYSTEM_PROMPT_PREMIUM
-            estructura_base = ESTRUCTURA_PREMIUM
+=== INSTRUCCIÓN DE SALIDA ===
+Devuelve ÚNICAMENTE un objeto JSON válido con exactamente esta estructura.
+No incluyas explicaciones, markdown, ni texto fuera del JSON.
+Rellena cada campo "..." con el copy real y persuasivo.
+Mercado objetivo: Chile. Usa el español chileno natural (no neutro).
 
-        # Resolver paleta y construir estructura con theme dinámico
-        paletas_disponibles = ["Modern Blue", "Nature Green", "Minimal Dark", "Warm Coral"]
-        palette = data.colorPalette if data.colorPalette in paletas_disponibles else "Modern Blue"
+Estructura esperada:
+{json_structure}
+"""
 
-        # Inyectar theme como primer campo del JSON
-        estructura = {"theme": {"colorPalette": palette}, **estructura_base}
-
-        # Construir contexto del negocio
-        contexto_negocio = f"""
-INFORMACIÓN DEL NEGOCIO:
-- Nombre: {data.projectName}
-- Descripción / Propuesta de valor: {data.projectIdea}
-- Call to Action deseado: {data.callToAction}
-- Mercado objetivo: Chile"""
-
-        if plan_normalizado in ["INTERMEDIATE", "PREMIUM"]:
-            contexto_negocio += f"""
-- Sector de la industria: {data.businessSector or 'No especificado'}
-- Tono de comunicación de la marca: {data.communicationTone or 'Profesional'}
-- Paleta de colores seleccionada: {palette}"""
-
-        if plan_normalizado == "PREMIUM":
-            contexto_negocio += f"""
-- Estilo visual objetivo: {data.visualStyle or 'Moderno y minimalista'}
-- Nivel de animaciones: {data.animationLevel or 'Suaves'}"""
-            if data.customPrompt:
-                contexto_negocio += f"""
-
-⚠️ INSTRUCCIÓN ESPECIAL DEL CLIENTE (prioridad máxima):
-{data.customPrompt}
-Intégrala en el customSection y donde sea relevante."""
-
-        # ── 5. Construir user prompt completo ─────────────────────────────────
-        estructura_str = json.dumps(estructura, ensure_ascii=False, indent=2)
-
-        user_prompt = f"""{contexto_negocio}
-
-TAREA:
-Genera el contenido completo para la landing page de este negocio.
-Aplica todos tus conocimientos de copywriting, CRO y estrategia de marca.
-El contenido debe ser 100% específico para este negocio — nunca genérico.
-Adapta el tono, vocabulario y ejemplos al sector y tipo de cliente de este negocio.
-
-⚠️ SOBRE EL CAMPO "theme":
-El JSON ya incluye el campo "theme.colorPalette" con el valor "{palette}".
-NO lo modifiques. Déjalo exactamente como está en la estructura.
-El sistema de renderizado lo usa para aplicar todos los colores de la página automáticamente.
-
-ESTRUCTURA JSON REQUERIDA:
-Sigue exactamente esta estructura. Los textos descriptivos entre comillas son guías:
-reemplázalos con contenido real, específico y de alta calidad para este negocio.
-
-{estructura_str}
-
-REGLAS ESTRICTAS:
-1. Devuelve ÚNICAMENTE el objeto JSON. Sin texto antes ni después.
-2. Sin bloques de código markdown (no uses ```json ni ```).
-3. Todo el contenido en español chileno.
-4. Todos los campos deben tener contenido real — nunca dejes los textos guía como respuesta.
-5. El email del footer debe ser realista basado en el nombre del negocio.
-6. Los emojis en features deben ser relevantes al beneficio que describen.
-7. El campo "theme" debe quedar idéntico a como aparece en la estructura de arriba."""
-
-        # Llamada al modelo
         response = client.chat.completions.create(
-            model=modelo_elegido,
-            max_tokens=2048,
+            model=model,
+            max_tokens=3000,
             messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user",   "content": user_prompt}
+                {
+                    "role": "system",
+                    "content": "Eres un experto en copywriting de conversión y diseño de landing pages. Respondes SOLO con JSON válido, nunca con texto adicional."
+                },
+                {
+                    "role": "user",
+                    "content": full_prompt
+                }
             ]
         )
 
-        respuesta_ia = response.choices[0].message.content
+        raw = response.choices[0].message.content.strip()
 
-        # Extracción robusta del JSON 
-        try:
-            ai_metadata_json = json.loads(respuesta_ia.strip())
-        except json.JSONDecodeError:
-            # Intento 2: buscar bloque JSON dentro del texto
-            match = re.search(r'\{.*\}', respuesta_ia, re.DOTALL)
-            if match:
-                try:
-                    ai_metadata_json = json.loads(match.group(0))
-                except json.JSONDecodeError:
-                    ai_metadata_json = {
-                        "error": "El modelo no generó un JSON válido",
-                        "raw_response": respuesta_ia
-                    }
-            else:
-                ai_metadata_json = {
-                    "error": "No se encontró un JSON en la respuesta",
-                    "raw_response": respuesta_ia
-                }
+        # Limpieza defensiva: elimina bloques markdown si el modelo los agrega
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
 
-        # Garantizar que el theme siempre esté presente ─────────────────
-        if isinstance(ai_metadata_json, dict) and "error" not in ai_metadata_json:
-            ai_metadata_json["theme"] = {"colorPalette": palette}
+        content_data = json.loads(raw)
 
         return {
-            "status":       "success",
-            "projectId":    data.projectId,
-            "plan_usado":   plan_normalizado,
-            "plan_recibido": plan_raw,
-            "ai_engine":    modelo_elegido,
-            "aiMetadata":   ai_metadata_json
+            "projectId": data.projectId,
+            "status": "success",
+            "content": content_data
         }
 
+    except json.JSONDecodeError as e:
+        print(f"[ERROR] JSON inválido del modelo: {e}")
+        raise HTTPException(status_code=500, detail="El modelo retornó un JSON inválido.")
     except Exception as e:
-        error_details = traceback.format_exc()
-        print(f"Error Crítico en la IA:\n{error_details}")
-        raise HTTPException(status_code=500, detail=f"Error interno IA: {str(e)}")
+        print(f"[ERROR] Generación fallida: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
