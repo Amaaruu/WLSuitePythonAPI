@@ -25,9 +25,6 @@ MODELOS_IA = {
 }
 
 # ── Mapas semánticos: token del selector → instrucción en lenguaje natural ────
-# Esto es lo más importante. Traduce cada valor del formulario
-# en una instrucción que el modelo realmente comprende.
-
 SECTOR_MAP = {
     "gastronomia":      "negocio gastronómico (restaurant, café, pastelería o similar)",
     "tecnologia":       "empresa o producto tecnológico (SaaS, app, servicio digital)",
@@ -150,6 +147,46 @@ LAYOUT_MAP = {
     "tarjetas":    "contenido organizado en grillas de tarjetas (cards) para cada feature o beneficio",
 }
 
+# ── Mapa semántico → hex real ─────────────────────────────────────────────────
+COLOR_HEX_MAP = {
+    "azul-marino":     "#1e3a5f",
+    "azul-cielo":      "#3b82f6",
+    "verde-bosque":    "#166534",
+    "verde-menta":     "#10b981",
+    "terracota":       "#b5541c",
+    "rojo-vibrante":   "#dc2626",
+    "morado":          "#7c3aed",
+    "rosa":            "#db2777",
+    "negro":           "#111827",
+    "gris-oscuro":     "#374151",
+    "gris-neutro":     "#9ca3af",
+    "blanco":          "#ffffff",
+    "crema":           "#fef9f0",
+    "amarillo-dorado": "#d97706",
+    "naranja":         "#ea580c",
+    "cian":            "#0891b2",
+}
+
+# Colores claros: el texto sobre ellos debe ser oscuro
+LIGHT_COLORS = {"blanco", "crema", "amarillo-dorado", "gris-neutro"}
+
+# Tipografías reales de Google Fonts por clave semántica
+FONT_IMPORT_MAP = {
+    "geometrica":     "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap",
+    "sans-humanista": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+    "serif-clasico":  "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@400;500;600&display=swap",
+    "display":        "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap",
+    "monospace":      "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap",
+}
+
+FONT_FAMILY_MAP = {
+    "geometrica":     "'Poppins', sans-serif",
+    "sans-humanista": "'Inter', sans-serif",
+    "serif-clasico":  "'Playfair Display', serif",
+    "display":        "'Space Grotesk', sans-serif",
+    "monospace":      "'JetBrains Mono', monospace",
+}
+
 SECTIONS_LABELS = {
     "hero":         "Hero principal con headline, subtítulo y CTA destacado",
     "features":     "Sección de características o beneficios clave (mínimo 3)",
@@ -169,7 +206,7 @@ class ProjectData(BaseModel):
     projectIdea: str
     callToAction: str
 
-    # Plan Básico nuevos
+    # Plan Básico
     businessSector:   Optional[str] = None
     landingGoal:      Optional[str] = None
     targetAudience:   Optional[str] = None
@@ -209,12 +246,6 @@ class ProjectData(BaseModel):
 # ── Constructor de prompts ────────────────────────────────────────────────────
 
 def build_prompt(data: ProjectData, plan: str) -> str:
-    """
-    Construye el prompt de ingeniería a partir de los tokens del formulario.
-    Cada valor del selector se traduce a lenguaje natural usando los mapas.
-    """
-
-    # Resuelve los tokens semánticos
     sector      = SECTOR_MAP.get(data.businessSector or "", "negocio")
     goal        = LANDING_GOAL_MAP.get(data.landingGoal or "", "informar al visitante")
     audience    = TARGET_AUDIENCE_MAP.get(data.targetAudience or "", "público general")
@@ -230,7 +261,6 @@ def build_prompt(data: ProjectData, plan: str) -> str:
     creativity  = CREATIVITY_MAP.get(data.creativityLevel or "", "diseño equilibrado")
     layout      = LAYOUT_MAP.get(data.layoutType or "", "layout centrado")
 
-    # Traduce las secciones activas
     sections_csv  = data.sections or "hero,features,footer"
     sections_list = [s.strip() for s in sections_csv.split(",") if s.strip()]
     sections_desc = "\n".join(
@@ -299,10 +329,6 @@ Nivel de creatividad permitido: {creativity}
 # ── Estructuras JSON por plan ─────────────────────────────────────────────────
 
 def get_json_structure(plan: str, sections_csv: str) -> str:
-    """
-    Devuelve la estructura JSON que debe respetar la respuesta del modelo.
-    Las secciones disponibles dependen del plan y de las selecciones del usuario.
-    """
     sections = [s.strip() for s in sections_csv.split(",") if s.strip()]
 
     base = {
@@ -422,6 +448,56 @@ Estructura esperada:
         raw = re.sub(r"\s*```$", "", raw)
 
         content_data = json.loads(raw)
+
+        # ── Inyectar tema visual en el contenido ──────────────────────────────
+        primary_key   = data.primaryColor   or "azul-marino"
+        secondary_key = data.secondaryColor or "azul-cielo"
+        typo_key      = data.typographyStyle or "sans-humanista"
+        base_mode     = data.baseMode       or "claro"
+
+        primary_hex   = COLOR_HEX_MAP.get(primary_key,   "#1e3a5f")
+        secondary_hex = COLOR_HEX_MAP.get(secondary_key, "#3b82f6")
+
+        # Texto sobre color primario: oscuro si el color es claro, blanco si es oscuro
+        primary_text   = "#111827" if primary_key   in LIGHT_COLORS else "#ffffff"
+        secondary_text = "#111827" if secondary_key in LIGHT_COLORS else "#ffffff"
+
+        # Fondos y textos base según modo claro u oscuro
+        if base_mode == "oscuro":
+            bg_primary   = "#0f172a"
+            bg_secondary = "#1e293b"
+            text_base    = "#f1f5f9"
+            text_muted   = "#94a3b8"
+            card_bg      = "#1e293b"
+            card_border  = "#334155"
+        else:
+            bg_primary   = "#ffffff"
+            bg_secondary = "#f8fafc"
+            text_base    = "#0f172a"
+            text_muted   = "#64748b"
+            card_bg      = "#ffffff"
+            card_border  = "#e2e8f0"
+
+        content_data["_theme"] = {
+            "primaryColor":   primary_hex,
+            "secondaryColor": secondary_hex,
+            "primaryText":    primary_text,
+            "secondaryText":  secondary_text,
+            "fontImport":     FONT_IMPORT_MAP.get(typo_key, FONT_IMPORT_MAP["sans-humanista"]),
+            "fontFamily":     FONT_FAMILY_MAP.get(typo_key, FONT_FAMILY_MAP["sans-humanista"]),
+            "baseMode":       base_mode,
+            "bgPrimary":      bg_primary,
+            "bgSecondary":    bg_secondary,
+            "textBase":       text_base,
+            "textMuted":      text_muted,
+            "cardBg":         card_bg,
+            "cardBorder":     card_border,
+            "buttonShape":    data.buttonShape    or "redondeado",
+            "buttonStyle":    data.buttonStyle    or "solido",
+            "animationLevel": data.animationLevel or "sutil",
+            "visualStyle":    data.visualStyle    or "moderno",
+        }
+        # ─────────────────────────────────────────────────────────────────────
 
         return {
             "projectId": data.projectId,
