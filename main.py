@@ -24,6 +24,13 @@ MODELOS_IA = {
     "PREMIUM":      "anthropic/claude-3.5-sonnet",
 }
 
+# ── Tokens máximos por plan ───────────────────────────────────────────────────
+MAX_TOKENS_BY_PLAN = {
+    "BASIC":        2000,
+    "INTERMEDIATE": 4000,
+    "PREMIUM":      6000,
+}
+
 # ── Mapas semánticos: token del selector → instrucción en lenguaje natural ────
 SECTOR_MAP = {
     "gastronomia":      "negocio gastronómico (restaurant, café, pastelería o similar)",
@@ -68,16 +75,16 @@ TARGET_AUDIENCE_MAP = {
 }
 
 BRAND_POSITIONING_MAP = {
-    "economico":       "posicionamiento de precio bajo, accesible para todos, énfasis en ahorro",
-    "calidad-precio":  "mejor relación calidad-precio del mercado, equilibrio entre costo y valor",
-    "premium":         "marca premium, calidad superior, dispuesta a pagar más por mejores resultados",
-    "lujo":            "marca de lujo exclusiva, experiencia aspiracional, precio no es objeción",
+    "economico":      "posicionamiento de precio bajo, accesible para todos, énfasis en ahorro",
+    "calidad-precio": "mejor relación calidad-precio del mercado, equilibrio entre costo y valor",
+    "premium":        "marca premium, calidad superior, dispuesta a pagar más por mejores resultados",
+    "lujo":           "marca de lujo exclusiva, experiencia aspiracional, precio no es objeción",
 }
 
 BRAND_STAGE_MAP = {
-    "nueva-marca":    "marca nueva que se presenta al mercado por primera vez",
-    "establecida":    "marca con trayectoria y reconocimiento en su mercado",
-    "relanzamiento":  "marca que se renueva y vuelve con nueva propuesta de valor",
+    "nueva-marca":   "marca nueva que se presenta al mercado por primera vez",
+    "establecida":   "marca con trayectoria y reconocimiento en su mercado",
+    "relanzamiento": "marca que se renueva y vuelve con nueva propuesta de valor",
 }
 
 TONE_MAP = {
@@ -96,28 +103,28 @@ FORMALITY_MAP = {
 }
 
 VISUAL_STYLE_MAP = {
-    "minimalista":  "estética minimalista: mucho espacio en blanco, tipografía limpia, pocos elementos, cada elemento con propósito claro",
-    "moderno":      "diseño moderno y contemporáneo: líneas limpias, geometría plana, colores frescos",
-    "corporativo":  "diseño corporativo serio: azules institucionales, estructura rígida, aspecto formal y confiable",
-    "futurista":    "estética futurista y tecnológica: dark mode, acentos neón o cian, elementos geométricos angulares",
-    "elegante":     "diseño de alta gama: paleta reducida de colores neutros o oscuros, tipografía serif, mucho aire",
-    "organico":     "estética orgánica y natural: colores de tierra, formas curvas, sensación cálida y humana",
-    "audaz":        "diseño audaz y llamativo: contrastes altos, tipografía display, impacto visual inmediato",
-    "retro":        "estética retro o vintage: paletas desaturadas, tipografías con carácter, nostalgia controlada",
+    "minimalista": "estética minimalista: mucho espacio en blanco, tipografía limpia, pocos elementos, cada elemento con propósito claro",
+    "moderno":     "diseño moderno y contemporáneo: líneas limpias, geometría plana, colores frescos",
+    "corporativo": "diseño corporativo serio: azules institucionales, estructura rígida, aspecto formal y confiable",
+    "futurista":   "estética futurista y tecnológica: dark mode, acentos neón o cian, elementos geométricos angulares",
+    "elegante":    "diseño de alta gama: paleta reducida de colores neutros o oscuros, tipografía serif, mucho aire",
+    "organico":    "estética orgánica y natural: colores de tierra, formas curvas, sensación cálida y humana",
+    "audaz":       "diseño audaz y llamativo: contrastes altos, tipografía display, impacto visual inmediato",
+    "retro":       "estética retro o vintage: paletas desaturadas, tipografías con carácter, nostalgia controlada",
 }
 
 TYPOGRAPHY_MAP = {
-    "geometrica":      "tipografía geométrica sans-serif (estilo Futura, Montserrat, Poppins): moderna, limpia, técnica",
-    "sans-humanista":  "tipografía sans-serif humanista (estilo Inter, DM Sans): muy legible, amigable, versátil",
-    "serif-clasico":   "tipografía serif clásica (estilo Playfair, Lora, Cormorant): elegante, literaria, premium",
-    "display":         "tipografía display de alto impacto para títulos (estilo Space Grotesk, Clash Display): personalidad fuerte",
-    "monospace":       "tipografía monoespaciada (estilo JetBrains Mono, Fira Code): para marcas tech o dev",
+    "geometrica":     "tipografía geométrica sans-serif (estilo Futura, Montserrat, Poppins): moderna, limpia, técnica",
+    "sans-humanista": "tipografía sans-serif humanista (estilo Inter, DM Sans): muy legible, amigable, versátil",
+    "serif-clasico":  "tipografía serif clásica (estilo Playfair, Lora, Cormorant): elegante, literaria, premium",
+    "display":        "tipografía display de alto impacto para títulos (estilo Space Grotesk, Clash Display): personalidad fuerte",
+    "monospace":      "tipografía monoespaciada (estilo JetBrains Mono, Fira Code): para marcas tech o dev",
 }
 
 BUTTON_SHAPE_MAP = {
-    "cuadrado":    "botones con bordes rectos (border-radius 0–4px)",
-    "redondeado":  "botones con esquinas ligeramente redondeadas (border-radius 8–12px)",
-    "pildora":     "botones en forma de píldora (border-radius 999px)",
+    "cuadrado":   "botones con bordes rectos (border-radius 0–4px)",
+    "redondeado": "botones con esquinas ligeramente redondeadas (border-radius 8–12px)",
+    "pildora":    "botones en forma de píldora (border-radius 999px)",
 }
 
 BUTTON_STYLE_MAP = {
@@ -135,16 +142,16 @@ ANIMATION_MAP = {
 }
 
 CREATIVITY_MAP = {
-    "conservadora":   "sigue las convenciones de diseño web estándar, no experimentes con estructuras inusuales",
-    "equilibrada":    "mezcla creatividad con convención, propón algo fresco pero reconocible",
-    "experimental":   "sé creativo y audaz, propón estructuras inesperadas, jerarquías visuales originales",
+    "conservadora": "sigue las convenciones de diseño web estándar, no experimentes con estructuras inusuales",
+    "equilibrada":  "mezcla creatividad con convención, propón algo fresco pero reconocible",
+    "experimental": "sé creativo y audaz, propón estructuras inesperadas, jerarquías visuales originales",
 }
 
 LAYOUT_MAP = {
-    "centrado":    "layout centrado en columna única, contenido bien enmarcado al centro",
-    "asimetrico":  "layout asimétrico con texto a la izquierda e imágenes/gráficos a la derecha (o viceversa)",
-    "full-width":  "secciones de ancho completo, elementos que sangran hasta los bordes",
-    "tarjetas":    "contenido organizado en grillas de tarjetas (cards) para cada feature o beneficio",
+    "centrado":   "layout centrado en columna única, contenido bien enmarcado al centro",
+    "asimetrico": "layout asimétrico con texto a la izquierda e imágenes/gráficos a la derecha (o viceversa)",
+    "full-width": "secciones de ancho completo, elementos que sangran hasta los bordes",
+    "tarjetas":   "contenido organizado en grillas de tarjetas (cards) para cada feature o beneficio",
 }
 
 # ── Mapa semántico → hex real ─────────────────────────────────────────────────
@@ -227,7 +234,7 @@ class ProjectData(BaseModel):
     typographyHierarchy: Optional[str] = None
     visualDensity:       Optional[str] = None
     sectionDividers:     Optional[str] = None
-    sections:            Optional[str] = None   # CSV: "hero,features,testimonials"
+    sections:            Optional[str] = None
 
     # Premium
     typographyStyle: Optional[str] = None
@@ -333,9 +340,9 @@ def get_json_structure(plan: str, sections_csv: str) -> str:
 
     base = {
         "hero": {
-            "headline": "...",
+            "headline":    "...",
             "subheadline": "...",
-            "ctaButton": "..."
+            "ctaButton":   "..."
         }
     }
 
@@ -346,30 +353,41 @@ def get_json_structure(plan: str, sections_csv: str) -> str:
             {"title": "...", "description": "..."},
         ]
 
+    # ── BASIC ─────────────────────────────────────────────────────────────────
     if plan == "BASIC":
         base["footer"] = {"contact": "contacto@empresa.cl"}
         return json.dumps(base, ensure_ascii=False, indent=2)
 
+    # ── INTERMEDIATE ──────────────────────────────────────────────────────────
     if plan == "INTERMEDIATE":
         if "testimonials" in sections:
             base["socialProof"] = {
-                "urgencyText": "...",
-                "shippingText": "..."
+                "urgencyText":  "...",
+                "shippingText": "...",
+                "testimonials": [
+                    {"name": "...", "role": "...", "quote": "..."},
+                    {"name": "...", "role": "...", "quote": "..."},
+                    {"name": "...", "role": "...", "quote": "..."},
+                ]
             }
         if "faq" in sections:
             base["faq"] = [
                 {"question": "...", "answer": "..."},
                 {"question": "...", "answer": "..."},
+                {"question": "...", "answer": "..."},
             ]
+        if "urgency" in sections:
+            base["urgency"] = {"title": "...", "countdown": "...", "ctaButton": "..."}
         base["footer"] = {"contact": "contacto@empresa.cl"}
         return json.dumps(base, ensure_ascii=False, indent=2)
 
-    # PREMIUM
+    # ── PREMIUM ───────────────────────────────────────────────────────────────
     if "testimonials" in sections:
         base["socialProof"] = {
-            "urgencyText": "...",
+            "urgencyText":  "...",
             "shippingText": "...",
             "testimonials": [
+                {"name": "...", "role": "...", "quote": "..."},
                 {"name": "...", "role": "...", "quote": "..."},
                 {"name": "...", "role": "...", "quote": "..."},
             ]
@@ -401,19 +419,32 @@ def home():
 @app.post("/api/v1/ai/generate")
 async def generate_landing(data: ProjectData):
     try:
-        plan = data.userPlan.upper()
-        model = MODELOS_IA.get(plan, MODELOS_IA["BASIC"])
+        # ── Normalización del plan ────────────────────────────────────────────
+        raw_plan = (data.userPlan or "").strip().upper()
+        PLAN_MAP = {
+            "BASICO":       "BASIC",
+            "BÁSICO":       "BASIC",
+            "BASIC":        "BASIC",
+            "INTERMEDIO":   "INTERMEDIATE",
+            "INTERMEDIATE": "INTERMEDIATE",
+            "PREMIUM":      "PREMIUM",
+        }
+        plan = PLAN_MAP.get(raw_plan, "BASIC")
+
+        if plan != raw_plan:
+            print(f"[generate_landing] Plan normalizado: '{raw_plan}' → '{plan}'")
+
+        model        = MODELOS_IA.get(plan, MODELOS_IA["BASIC"])
+        max_tokens   = MAX_TOKENS_BY_PLAN.get(plan, 2000)
         sections_csv = data.sections or "hero,features,footer"
 
-        print(f"[{plan}] Generando landing para: {data.projectName} | Modelo: {model}")
+        print(f"[{plan}] Proyecto: {data.projectName} | Modelo: {model} | Max tokens: {max_tokens} | Secciones: {sections_csv}")
 
-        # Construye el prompt semántico
+        # ── Construcción del prompt ───────────────────────────────────────────
         prompt = build_prompt(data, plan)
 
-        # Obtiene la estructura JSON esperada
         json_structure = get_json_structure(plan, sections_csv)
 
-        # Instrucción final al modelo
         full_prompt = f"""{prompt}
 
 === INSTRUCCIÓN DE SALIDA ===
@@ -426,9 +457,10 @@ Estructura esperada:
 {json_structure}
 """
 
+        # ── Llamada al modelo ─────────────────────────────────────────────────
         response = client.chat.completions.create(
             model=model,
-            max_tokens=3000,
+            max_tokens=max_tokens,
             messages=[
                 {
                     "role": "system",
@@ -443,26 +475,40 @@ Estructura esperada:
 
         raw = response.choices[0].message.content.strip()
 
-        # Limpieza defensiva: elimina bloques markdown si el modelo los agrega
-        raw = re.sub(r"^```(?:json)?\s*", "", raw)
-        raw = re.sub(r"\s*```$", "", raw)
+        # ── Limpieza defensiva del JSON ───────────────────────────────────────
+        raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
+        raw = re.sub(r"\s*```\s*$",       "", raw, flags=re.MULTILINE)
+        raw = raw.strip()
 
-        content_data = json.loads(raw)
+        if not raw.startswith("{"):
+            first_brace = raw.find("{")
+            if first_brace != -1:
+                print(f"[WARN] El modelo incluyó texto antes del JSON — recortando desde posición {first_brace}")
+                raw = raw[first_brace:]
+            else:
+                print(f"[ERROR] La respuesta del modelo no contiene JSON (plan={plan}):\n{raw[:500]}")
+                raise HTTPException(status_code=500, detail="El modelo no retornó un JSON válido.")
 
-        # ── Inyectar tema visual en el contenido ──────────────────────────────
+        # ── Parseo del JSON ───────────────────────────────────────────────────
+        try:
+            content_data = json.loads(raw)
+        except json.JSONDecodeError as e:
+            print(f"[ERROR] JSON inválido (plan={plan}): {e}")
+            print(f"[ERROR] Raw (primeros 1000 chars):\n{raw[:1000]}")
+            raise HTTPException(status_code=500, detail=f"El modelo retornó un JSON inválido: {str(e)}")
+
+        # ── Inyección del tema visual ─────────────────────────────────────────
         primary_key   = data.primaryColor   or "azul-marino"
         secondary_key = data.secondaryColor or "azul-cielo"
         typo_key      = data.typographyStyle or "sans-humanista"
-        base_mode     = data.baseMode       or "claro"
+        base_mode     = data.baseMode        or "claro"
 
         primary_hex   = COLOR_HEX_MAP.get(primary_key,   "#1e3a5f")
         secondary_hex = COLOR_HEX_MAP.get(secondary_key, "#3b82f6")
 
-        # Texto sobre color primario: oscuro si el color es claro, blanco si es oscuro
         primary_text   = "#111827" if primary_key   in LIGHT_COLORS else "#ffffff"
         secondary_text = "#111827" if secondary_key in LIGHT_COLORS else "#ffffff"
 
-        # Fondos y textos base según modo claro u oscuro
         if base_mode == "oscuro":
             bg_primary   = "#0f172a"
             bg_secondary = "#1e293b"
@@ -497,17 +543,15 @@ Estructura esperada:
             "animationLevel": data.animationLevel or "sutil",
             "visualStyle":    data.visualStyle    or "moderno",
         }
-        # ─────────────────────────────────────────────────────────────────────
 
         return {
             "projectId": data.projectId,
-            "status": "success",
-            "content": content_data
+            "status":    "success",
+            "content":   content_data
         }
 
-    except json.JSONDecodeError as e:
-        print(f"[ERROR] JSON inválido del modelo: {e}")
-        raise HTTPException(status_code=500, detail="El modelo retornó un JSON inválido.")
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"[ERROR] Generación fallida: {traceback.format_exc()}")
+        print(f"[ERROR] Generación fallida (plan={data.userPlan}): {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
