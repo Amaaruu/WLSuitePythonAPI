@@ -1,3 +1,4 @@
+# main.py — WLSuite AI Engine v3 (Compatible con backend Java + LandingViewer.jsx)
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -10,7 +11,7 @@ from openai import OpenAI
 
 load_dotenv()
 
-app = FastAPI(title="WLSuite AI Engine v2 — Rich Context")
+app = FastAPI(title="WLSuite AI Engine v3 — Full Stack Compatible")
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -24,35 +25,34 @@ MODELOS_IA = {
     "PREMIUM":      "anthropic/claude-3.5-sonnet",
 }
 
-# ── Tokens máximos por plan ───────────────────────────────────────────────────
 MAX_TOKENS_BY_PLAN = {
-    "BASIC":        2000,
-    "INTERMEDIATE": 4000,
-    "PREMIUM":      6000,
+    "BASIC":        3000,
+    "INTERMEDIATE": 5500,
+    "PREMIUM":      8000,
 }
 
-# ── Mapas semánticos: token del selector → instrucción en lenguaje natural ────
+# ── Mapas semánticos ──────────────────────────────────────────────────────────
 SECTOR_MAP = {
-    "gastronomia":      "negocio gastronómico (restaurant, café, pastelería o similar)",
-    "tecnologia":       "empresa o producto tecnológico (SaaS, app, servicio digital)",
-    "salud":            "negocio del área de salud o bienestar (clínica, terapias, nutrición)",
-    "educacion":        "plataforma o servicio educativo (cursos, tutorías, academia)",
-    "moda":             "marca de moda, ropa, accesorios o estilo de vida",
-    "fitness":          "negocio de fitness, deporte o entrenamiento físico",
-    "legal":            "estudio jurídico o servicio legal profesional",
-    "inmobiliaria":     "empresa o agente inmobiliario",
-    "turismo":          "agencia de viajes, tours o alojamiento turístico",
-    "ecommerce":        "tienda online o comercio electrónico generalista",
-    "fintech":          "servicio financiero o fintech (pagos, inversión, crédito)",
-    "consultoria":      "consultora o servicios de asesoría profesional",
-    "construccion":     "empresa de construcción, arquitectura o remodelación",
-    "belleza":          "salón de belleza, estética, cuidado personal o cosmética",
-    "mascotas":         "negocio orientado al cuidado o productos para mascotas",
-    "eventos":          "organización de eventos, bodas, celebraciones o entretenimiento",
-    "arte":             "creador, artista, fotógrafo o agencia creativa",
-    "automotriz":       "concesionario, taller mecánico o servicio automotriz",
-    "ong":              "organización sin fines de lucro o causa social",
-    "otro":             "negocio de propósito general",
+    "gastronomia":   "negocio gastronómico (restaurant, café, pastelería o similar)",
+    "tecnologia":    "empresa o producto tecnológico (SaaS, app, servicio digital)",
+    "salud":         "negocio del área de salud o bienestar (clínica, terapias, nutrición)",
+    "educacion":     "plataforma o servicio educativo (cursos, tutorías, academia)",
+    "moda":          "marca de moda, ropa, accesorios o estilo de vida",
+    "fitness":       "negocio de fitness, deporte o entrenamiento físico",
+    "legal":         "estudio jurídico o servicio legal profesional",
+    "inmobiliaria":  "empresa o agente inmobiliario",
+    "turismo":       "agencia de viajes, tours o alojamiento turístico",
+    "ecommerce":     "tienda online o comercio electrónico generalista",
+    "fintech":       "servicio financiero o fintech (pagos, inversión, crédito)",
+    "consultoria":   "consultora o servicios de asesoría profesional",
+    "construccion":  "empresa de construcción, arquitectura o remodelación",
+    "belleza":       "salón de belleza, estética, cuidado personal o cosmética",
+    "mascotas":      "negocio orientado al cuidado o productos para mascotas",
+    "eventos":       "organización de eventos, bodas, celebraciones o entretenimiento",
+    "arte":          "creador, artista, fotógrafo o agencia creativa",
+    "automotriz":    "concesionario, taller mecánico o servicio automotriz",
+    "ong":           "organización sin fines de lucro o causa social",
+    "otro":          "negocio de propósito general",
 }
 
 LANDING_GOAL_MAP = {
@@ -103,22 +103,22 @@ FORMALITY_MAP = {
 }
 
 VISUAL_STYLE_MAP = {
-    "minimalista": "estética minimalista: mucho espacio en blanco, tipografía limpia, pocos elementos, cada elemento con propósito claro",
+    "minimalista": "estética minimalista: mucho espacio en blanco, tipografía limpia, pocos elementos",
     "moderno":     "diseño moderno y contemporáneo: líneas limpias, geometría plana, colores frescos",
-    "corporativo": "diseño corporativo serio: azules institucionales, estructura rígida, aspecto formal y confiable",
-    "futurista":   "estética futurista y tecnológica: dark mode, acentos neón o cian, elementos geométricos angulares",
-    "elegante":    "diseño de alta gama: paleta reducida de colores neutros o oscuros, tipografía serif, mucho aire",
-    "organico":    "estética orgánica y natural: colores de tierra, formas curvas, sensación cálida y humana",
+    "corporativo": "diseño corporativo serio: estructura rígida, aspecto formal y confiable",
+    "futurista":   "estética futurista y tecnológica: dark mode, acentos neón o cian, elementos angulares",
+    "elegante":    "diseño de alta gama: paleta reducida, tipografía serif, mucho aire",
+    "organico":    "estética orgánica y natural: colores de tierra, formas curvas, sensación cálida",
     "audaz":       "diseño audaz y llamativo: contrastes altos, tipografía display, impacto visual inmediato",
-    "retro":       "estética retro o vintage: paletas desaturadas, tipografías con carácter, nostalgia controlada",
+    "retro":       "estética retro o vintage: paletas desaturadas, tipografías con carácter",
 }
 
 TYPOGRAPHY_MAP = {
-    "geometrica":     "tipografía geométrica sans-serif (estilo Futura, Montserrat, Poppins): moderna, limpia, técnica",
-    "sans-humanista": "tipografía sans-serif humanista (estilo Inter, DM Sans): muy legible, amigable, versátil",
-    "serif-clasico":  "tipografía serif clásica (estilo Playfair, Lora, Cormorant): elegante, literaria, premium",
-    "display":        "tipografía display de alto impacto para títulos (estilo Space Grotesk, Clash Display): personalidad fuerte",
-    "monospace":      "tipografía monoespaciada (estilo JetBrains Mono, Fira Code): para marcas tech o dev",
+    "geometrica":     "tipografía geométrica sans-serif (Poppins, Montserrat): moderna, limpia, técnica",
+    "sans-humanista": "tipografía sans-serif humanista (Inter, DM Sans): legible, amigable, versátil",
+    "serif-clasico":  "tipografía serif clásica (Playfair, Lora): elegante, literaria, premium",
+    "display":        "tipografía display de alto impacto (Space Grotesk, Clash Display): personalidad fuerte",
+    "monospace":      "tipografía monoespaciada (JetBrains Mono): para marcas tech o dev",
 }
 
 BUTTON_SHAPE_MAP = {
@@ -138,23 +138,23 @@ ANIMATION_MAP = {
     "ninguna":   "sin ningún tipo de animación, página completamente estática",
     "sutil":     "animaciones muy suaves: fade-in simple en carga, sin distracciones",
     "moderada":  "animaciones moderadas: elementos aparecen al hacer scroll, hover suaves",
-    "expresiva": "animaciones expresivas y vivas: transiciones fluidas, efectos de paralaje, microinteracciones notorias",
+    "expresiva": "animaciones expresivas y vivas: transiciones fluidas, paralaje, microinteracciones",
 }
 
 CREATIVITY_MAP = {
-    "conservadora": "sigue las convenciones de diseño web estándar, no experimentes con estructuras inusuales",
+    "conservadora": "sigue las convenciones de diseño web estándar",
     "equilibrada":  "mezcla creatividad con convención, propón algo fresco pero reconocible",
-    "experimental": "sé creativo y audaz, propón estructuras inesperadas, jerarquías visuales originales",
+    "experimental": "sé creativo y audaz, propón estructuras inesperadas, jerarquías originales",
 }
 
 LAYOUT_MAP = {
     "centrado":   "layout centrado en columna única, contenido bien enmarcado al centro",
-    "asimetrico": "layout asimétrico con texto a la izquierda e imágenes/gráficos a la derecha (o viceversa)",
+    "asimetrico": "layout asimétrico con texto a la izquierda e imágenes/gráficos a la derecha",
     "full-width": "secciones de ancho completo, elementos que sangran hasta los bordes",
-    "tarjetas":   "contenido organizado en grillas de tarjetas (cards) para cada feature o beneficio",
+    "tarjetas":   "contenido organizado en grillas de tarjetas para cada feature o beneficio",
 }
 
-# ── Mapa semántico → hex real ─────────────────────────────────────────────────
+# ── Mapa hex de colores ───────────────────────────────────────────────────────
 COLOR_HEX_MAP = {
     "azul-marino":     "#1e3a5f",
     "azul-cielo":      "#3b82f6",
@@ -174,10 +174,8 @@ COLOR_HEX_MAP = {
     "cian":            "#0891b2",
 }
 
-# Colores claros: el texto sobre ellos debe ser oscuro
 LIGHT_COLORS = {"blanco", "crema", "amarillo-dorado", "gris-neutro"}
 
-# Tipografías reales de Google Fonts por clave semántica
 FONT_IMPORT_MAP = {
     "geometrica":     "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap",
     "sans-humanista": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
@@ -196,15 +194,12 @@ FONT_FAMILY_MAP = {
 
 SECTIONS_LABELS = {
     "hero":         "Hero principal con headline, subtítulo y CTA destacado",
-    "features":     "Sección de características o beneficios clave (mínimo 3)",
+    "features":     "Sección de características o beneficios clave (mínimo 4)",
     "testimonials": "Testimonios o prueba social de clientes reales",
     "faq":          "Sección de preguntas frecuentes con respuestas concisas",
     "pricing":      "Tabla o sección de precios y planes",
     "urgency":      "Sección de urgencia, escasez o promoción con límite de tiempo",
 }
-
-
-# ── Modelo Pydantic ───────────────────────────────────────────────────────────
 
 class ProjectData(BaseModel):
     projectId: int
@@ -225,7 +220,7 @@ class ProjectData(BaseModel):
     communicationTone: Optional[str] = None
     formalityLevel:    Optional[str] = None
 
-    # Intermedio+ desde designPreferences
+    # Intermedio+ (vienen de designPreferences en AiService.java)
     primaryColor:        Optional[str] = None
     secondaryColor:      Optional[str] = None
     baseMode:            Optional[str] = None
@@ -249,8 +244,13 @@ class ProjectData(BaseModel):
     hoverIntensity:  Optional[str] = None
     contentDensity:  Optional[str] = None
 
+    # Imágenes personalizadas (vienen dentro de designPreferences
+    # y AiService.java las extrae como campos de primer nivel)
+    heroImageUrl: Optional[str] = None
+    logoImageUrl: Optional[str] = None
 
-# ── Constructor de prompts ────────────────────────────────────────────────────
+
+# ── Constructor del prompt ────────────────────────────────────────────────────
 
 def build_prompt(data: ProjectData, plan: str) -> str:
     sector      = SECTOR_MAP.get(data.businessSector or "", "negocio")
@@ -276,150 +276,278 @@ def build_prompt(data: ProjectData, plan: str) -> str:
     )
 
     # ── Bloque base — todos los planes ───────────────────────────────────────
-    prompt = f"""Eres un Copywriter experto en CRO (Conversion Rate Optimization) y diseño web de alta conversión.
-Tu tarea es estructurar los textos persuasivos de una landing page para el siguiente negocio.
+    prompt = f"""Eres un copywriter experto en CRO (Conversion Rate Optimization) especializado
+en landing pages de alta conversión para el mercado chileno.
+Tu tarea es generar los textos persuasivos de una landing page real.
+
+REGLA CRÍTICA: No uses frases genéricas como "soluciones innovadoras",
+"calidad garantizada" o "expertos en el área". Cada palabra debe ser específica
+para este negocio y resonar con su audiencia real.
 
 === CONTEXTO DEL NEGOCIO ===
-Nombre del proyecto: {data.projectName}
+Nombre: {data.projectName}
 Tipo de negocio: {sector}
 Propuesta de valor: {data.projectIdea}
 Etapa de la marca: {stage}
-Posicionamiento de precio: {positioning}
-Objetivo principal de la landing: {goal}
+Posicionamiento: {positioning}
+Objetivo de la landing: {goal}
 Público objetivo: {audience}
-Llamado a la acción (CTA): {data.callToAction}
+CTA principal: {data.callToAction}
 """
 
     if data.valueProposition:
-        prompt += f"Diferenciador clave del negocio: {data.valueProposition}\n"
+        prompt += f"Diferenciador clave: {data.valueProposition}\n"
 
     # ── Bloque Intermedio+ ────────────────────────────────────────────────────
     if plan in ["INTERMEDIATE", "PREMIUM"]:
         prompt += f"""
 === IDENTIDAD DE COMUNICACIÓN ===
-Tono de la marca: {tone}
-Nivel de formalidad: {formality}
-Paleta de color primaria: {data.primaryColor or 'azul marino'}
-Paleta de color secundaria: {data.secondaryColor or 'blanco'}
+Tono: {tone}
+Formalidad: {formality}
+Color primario: {data.primaryColor or 'azul marino'}
+Color secundario: {data.secondaryColor or 'blanco'}
 Modo base: {data.baseMode or 'claro'}
-Nivel de contraste: {data.contrastLevel or 'estándar'}
+Contraste: {data.contrastLevel or 'estándar'}
 Estilo visual: {v_style}
 Densidad visual: {data.visualDensity or 'equilibrado'}
-Separación de secciones: {data.sectionDividers or 'limpia'}
+Separación entre secciones: {data.sectionDividers or 'limpia'}
 
-=== ESTRUCTURA DE SECCIONES SOLICITADA ===
-La landing debe incluir OBLIGATORIAMENTE estas secciones en este orden:
+=== SECCIONES OBLIGATORIAS (en este orden) ===
 {sections_desc}
 """
 
     # ── Bloque Premium ────────────────────────────────────────────────────────
     if plan == "PREMIUM":
         prompt += f"""
-=== DIRECTRICES AVANZADAS DE DISEÑO ===
+=== DIRECTRICES AVANZADAS ===
 Tipografía: {typo}
 Jerarquía tipográfica: {data.typographyHierarchy or 'equilibrada'}
-Tipo de layout: {layout}
+Layout: {layout}
 Forma de botones: {btn_shape}
 Estilo de botones: {btn_style}
-Estilo de íconos: {data.iconStyle or 'outline'}
-Nivel de animaciones: {anim}
+Íconos: {data.iconStyle or 'outline'}
+Animaciones: {anim}
 Efecto de scroll: {data.scrollEffect or 'fade-in'}
-Efecto en hero: {data.heroEffect or 'ninguno'}
-Intensidad de hover: {data.hoverIntensity or 'sutil'}
+Efecto hero: {data.heroEffect or 'ninguno'}
+Intensidad hover: {data.hoverIntensity or 'sutil'}
 Densidad de contenido: {data.contentDensity or 'equilibrado'}
-Nivel de creatividad permitido: {creativity}
+Creatividad: {creativity}
 """
 
     return prompt
 
-
-# ── Estructuras JSON por plan ─────────────────────────────────────────────────
-
 def get_json_structure(plan: str, sections_csv: str) -> str:
     sections = [s.strip() for s in sections_csv.split(",") if s.strip()]
 
+    # Hero — presente en todos los planes
     base = {
         "hero": {
-            "headline":    "...",
-            "subheadline": "...",
-            "ctaButton":   "..."
+            "badge":           "...",
+            "headline":        "...",
+            "subheadline":     "...",
+            "ctaButton":       "...",
+            "secondaryCta":    "...",
+            "trustIndicators": ["...", "...", "..."],
+            "supportingText":  "..."
         }
     }
 
+    # Features — todos los planes (BASIC incluye si está en sections)
     if "features" in sections or plan in ["INTERMEDIATE", "PREMIUM"]:
         base["features"] = [
-            {"title": "...", "description": "..."},
-            {"title": "...", "description": "..."},
-            {"title": "...", "description": "..."},
+            {"icon": "🎯", "title": "...", "description": "...", "highlight": False},
+            {"icon": "⚡", "title": "...", "description": "...", "highlight": True},
+            {"icon": "🛡️", "title": "...", "description": "...", "highlight": False},
+            {"icon": "✨", "title": "...", "description": "...", "highlight": False},
         ]
 
     # ── BASIC ─────────────────────────────────────────────────────────────────
     if plan == "BASIC":
-        base["footer"] = {"contact": "contacto@empresa.cl"}
+        base["footer"] = {
+            "description": "...",
+            "contact":     "contacto@empresa.cl",
+            "legalText":   "Todos los derechos reservados."
+        }
         return json.dumps(base, ensure_ascii=False, indent=2)
 
     # ── INTERMEDIATE ──────────────────────────────────────────────────────────
     if plan == "INTERMEDIATE":
+        # socialProof: LandingViewer lee d.socialProof.testimonials y d.socialProof.stats
         if "testimonials" in sections:
             base["socialProof"] = {
-                "urgencyText":  "...",
-                "shippingText": "...",
+                "title":    "...",
+                "subtitle": "...",
+                "stats": [
+                    {"number": "...", "label": "...", "description": "..."},
+                    {"number": "...", "label": "...", "description": "..."},
+                    {"number": "...", "label": "...", "description": "..."},
+                ],
                 "testimonials": [
-                    {"name": "...", "role": "...", "quote": "..."},
-                    {"name": "...", "role": "...", "quote": "..."},
-                    {"name": "...", "role": "...", "quote": "..."},
+                    {"name": "...", "role": "...", "company": "...", "quote": "...", "rating": 5},
+                    {"name": "...", "role": "...", "company": "...", "quote": "...", "rating": 5},
+                    {"name": "...", "role": "...", "company": "...", "quote": "...", "rating": 4},
                 ]
             }
+
         if "faq" in sections:
-            base["faq"] = [
-                {"question": "...", "answer": "..."},
-                {"question": "...", "answer": "..."},
-                {"question": "...", "answer": "..."},
-            ]
+            base["faq"] = {
+                "title":    "...",
+                "subtitle": "...",
+                "items": [
+                    {"question": "...", "answer": "..."},
+                    {"question": "...", "answer": "..."},
+                    {"question": "...", "answer": "..."},
+                    {"question": "...", "answer": "..."},
+                ]
+            }
+
+        # urgency: LandingViewer lee countdown.enabled (booleano)
         if "urgency" in sections:
-            base["urgency"] = {"title": "...", "countdown": "...", "ctaButton": "..."}
-        base["footer"] = {"contact": "contacto@empresa.cl"}
+            base["urgency"] = {
+                "badge":          "...",
+                "title":          "...",
+                "subtitle":       "...",
+                "countdown":      {"enabled": True, "label": "La oferta termina en:"},
+                "benefitsList":   ["...", "...", "..."],
+                "ctaButton":      "...",
+                "supportingText": "..."
+            }
+
+        # cta final — siempre presente desde INTERMEDIATE
+        base["cta"] = {
+            "title":        "...",
+            "subtitle":     "...",
+            "ctaButton":    "...",
+            "secondaryCta": "...",
+            "trustText":    "..."
+        }
+
+        base["footer"] = {
+            "description": "...",
+            "contact":     "contacto@empresa.cl",
+            "phone":       "+56 9 XXXX XXXX",
+            "legalText":   "Todos los derechos reservados.",
+            "socialProof": "..."
+        }
         return json.dumps(base, ensure_ascii=False, indent=2)
 
     # ── PREMIUM ───────────────────────────────────────────────────────────────
+    # socialProof: misma estructura que INTERMEDIATE
     if "testimonials" in sections:
         base["socialProof"] = {
-            "urgencyText":  "...",
-            "shippingText": "...",
+            "title":    "...",
+            "subtitle": "...",
+            "stats": [
+                {"number": "...", "label": "...", "description": "..."},
+                {"number": "...", "label": "...", "description": "..."},
+                {"number": "...", "label": "...", "description": "..."},
+            ],
             "testimonials": [
-                {"name": "...", "role": "...", "quote": "..."},
-                {"name": "...", "role": "...", "quote": "..."},
-                {"name": "...", "role": "...", "quote": "..."},
+                {"name": "...", "role": "...", "company": "...", "quote": "...", "rating": 5},
+                {"name": "...", "role": "...", "company": "...", "quote": "...", "rating": 5},
+                {"name": "...", "role": "...", "company": "...", "quote": "...", "rating": 4},
             ]
         }
-    if "pricing" in sections:
-        base["pricing"] = [
-            {"planName": "...", "price": "...", "benefits": ["...", "...", "..."]}
-        ]
-    if "faq" in sections:
-        base["faq"] = [
-            {"question": "...", "answer": "..."},
-            {"question": "...", "answer": "..."},
-            {"question": "...", "answer": "..."},
-        ]
-    if "urgency" in sections:
-        base["urgency"] = {"title": "...", "countdown": "...", "ctaButton": "..."}
 
-    base["footer"] = {"contact": "contacto@empresa.cl"}
+    if "pricing" in sections:
+        base["pricing"] = {
+            "badge":    "...",
+            "title":    "...",
+            "subtitle": "...",
+            "plans": [
+                {
+                    "name":        "...",
+                    "description": "...",
+                    "price":       "...",
+                    "period":      "...",
+                    "featured":    False,
+                    "benefits":    ["...", "...", "...", "...", "..."],
+                    "notIncluded": [],
+                    "ctaButton":   "..."
+                },
+                {
+                    "name":        "...",
+                    "description": "...",
+                    "price":       "...",
+                    "period":      "...",
+                    "featured":    True,
+                    "badge":       "Más popular",
+                    "benefits":    ["...", "...", "...", "...", "..."],
+                    "ctaButton":   "..."
+                },
+            ]
+        }
+
+    # faq: misma estructura que INTERMEDIATE
+    if "faq" in sections:
+        base["faq"] = {
+            "title":    "...",
+            "subtitle": "...",
+            "items": [
+                {"question": "...", "answer": "..."},
+                {"question": "...", "answer": "..."},
+                {"question": "...", "answer": "..."},
+                {"question": "...", "answer": "..."},
+                {"question": "...", "answer": "..."},
+            ]
+        }
+
+    # urgency: misma estructura que INTERMEDIATE
+    if "urgency" in sections:
+        base["urgency"] = {
+            "badge":          "...",
+            "title":          "...",
+            "subtitle":       "...",
+            "countdown":      {"enabled": True, "label": "La oferta termina en:"},
+            "benefitsList":   ["...", "...", "...", "..."],
+            "ctaButton":      "...",
+            "supportingText": "..."
+        }
+
+    # howItWorks: exclusivo Premium — LandingViewer lee d.howItWorks.steps
+    base["howItWorks"] = {
+        "title":    "...",
+        "subtitle": "...",
+        "steps": [
+            {"number": "01", "title": "...", "description": "..."},
+            {"number": "02", "title": "...", "description": "..."},
+            {"number": "03", "title": "...", "description": "..."},
+        ]
+    }
+
+    base["cta"] = {
+        "title":        "...",
+        "subtitle":     "...",
+        "ctaButton":    "...",
+        "secondaryCta": "...",
+        "trustText":    "..."
+    }
+
+    base["footer"] = {
+        "description": "...",
+        "contact":     "contacto@empresa.cl",
+        "phone":       "+56 9 XXXX XXXX",
+        "legalText":   "Todos los derechos reservados.",
+        "socialProof": "...",
+        "links": [
+            {"label": "Inicio",    "href": "#hero"},
+            {"label": "Servicios", "href": "#features"},
+            {"label": "Contacto",  "href": "#contacto"},
+        ]
+    }
     return json.dumps(base, ensure_ascii=False, indent=2)
 
 
-# ── Endpoint principal ────────────────────────────────────────────────────────
-
+# ── Endpoint de salud ─────────────────────────────────────────────────────────
 @app.get("/")
 def home():
-    return {"message": "WLSuite AI Engine v2 — Rich Context activo"}
+    return {"message": "WLSuite AI Engine v3 — Full Stack Compatible activo"}
 
 
+# ── Endpoint principal ────────────────────────────────────────────────────────
 @app.post("/api/v1/ai/generate")
 async def generate_landing(data: ProjectData):
     try:
-        # ── Normalización del plan ────────────────────────────────────────────
         raw_plan = (data.userPlan or "").strip().upper()
         PLAN_MAP = {
             "BASICO":       "BASIC",
@@ -435,36 +563,46 @@ async def generate_landing(data: ProjectData):
             print(f"[generate_landing] Plan normalizado: '{raw_plan}' → '{plan}'")
 
         model        = MODELOS_IA.get(plan, MODELOS_IA["BASIC"])
-        max_tokens   = MAX_TOKENS_BY_PLAN.get(plan, 2000)
+        max_tokens   = MAX_TOKENS_BY_PLAN.get(plan, 3000)
         sections_csv = data.sections or "hero,features,footer"
 
-        print(f"[{plan}] Proyecto: {data.projectName} | Modelo: {model} | Max tokens: {max_tokens} | Secciones: {sections_csv}")
+        print(f"[{plan}] Proyecto: {data.projectName} | Modelo: {model} | Secciones: {sections_csv}")
 
-        # ── Construcción del prompt ───────────────────────────────────────────
-        prompt = build_prompt(data, plan)
-
+        # ── Construcción del prompt y la estructura esperada ──────────────────
+        prompt         = build_prompt(data, plan)
         json_structure = get_json_structure(plan, sections_csv)
 
         full_prompt = f"""{prompt}
 
 === INSTRUCCIÓN DE SALIDA ===
-Devuelve ÚNICAMENTE un objeto JSON válido con exactamente esta estructura.
-No incluyas explicaciones, markdown, ni texto fuera del JSON.
-Rellena cada campo "..." con el copy real y persuasivo.
-Mercado objetivo: Chile. Usa el español chileno natural (no neutro).
+Devuelve ÚNICAMENTE el objeto JSON. Sin markdown, sin explicaciones, sin texto fuera del JSON.
+Rellena cada "..." con copy real, específico y persuasivo para {data.projectName}.
+Mercado objetivo: Chile. Usa español chileno natural (no neutro).
 
-Estructura esperada:
+REGLAS DE CALIDAD:
+1. Todos los textos deben ser específicos para el sector y la audiencia indicados
+2. Los números en estadísticas deben ser creíbles y variados (no siempre "100%")
+3. Los testimonios deben incluir nombres chilenos reales (Valentina, Diego, Catalina, etc.)
+4. Las preguntas del FAQ deben ser objeciones reales de compra para este tipo de negocio
+5. El headline del hero debe impactar en 8 palabras o menos
+
+JSON esperado:
 {json_structure}
 """
 
-        # ── Llamada al modelo ─────────────────────────────────────────────────
+        # ── Llamada al modelo de IA ───────────────────────────────────────────
         response = client.chat.completions.create(
             model=model,
             max_tokens=max_tokens,
             messages=[
                 {
                     "role": "system",
-                    "content": "Eres un experto en copywriting de conversión y diseño de landing pages. Respondes SOLO con JSON válido, nunca con texto adicional."
+                    "content": (
+                        "Eres el mejor copywriter de conversión de América Latina, "
+                        "especializado en landing pages para el mercado chileno. "
+                        "Respondes SOLO con JSON válido. Nunca incluyes texto adicional, "
+                        "nunca usas bloques markdown, nunca explicas tu respuesta."
+                    )
                 },
                 {
                     "role": "user",
@@ -475,7 +613,7 @@ Estructura esperada:
 
         raw = response.choices[0].message.content.strip()
 
-        # ── Limpieza defensiva del JSON ───────────────────────────────────────
+        # ── Limpieza defensiva ────────────────────────────────────────────────
         raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
         raw = re.sub(r"\s*```\s*$",       "", raw, flags=re.MULTILINE)
         raw = raw.strip()
@@ -483,21 +621,18 @@ Estructura esperada:
         if not raw.startswith("{"):
             first_brace = raw.find("{")
             if first_brace != -1:
-                print(f"[WARN] El modelo incluyó texto antes del JSON — recortando desde posición {first_brace}")
+                print(f"[WARN] Texto antes del JSON — recortando desde posición {first_brace}")
                 raw = raw[first_brace:]
             else:
-                print(f"[ERROR] La respuesta del modelo no contiene JSON (plan={plan}):\n{raw[:500]}")
+                print(f"[ERROR] Sin JSON en respuesta (plan={plan}):\n{raw[:500]}")
                 raise HTTPException(status_code=500, detail="El modelo no retornó un JSON válido.")
 
-        # ── Parseo del JSON ───────────────────────────────────────────────────
+        # ── Parseo ────────────────────────────────────────────────────────────
         try:
             content_data = json.loads(raw)
         except json.JSONDecodeError as e:
-            print(f"[ERROR] JSON inválido (plan={plan}): {e}")
-            print(f"[ERROR] Raw (primeros 1000 chars):\n{raw[:1000]}")
-            raise HTTPException(status_code=500, detail=f"El modelo retornó un JSON inválido: {str(e)}")
-
-        # ── Inyección del tema visual ─────────────────────────────────────────
+            print(f"[ERROR] JSON inválido (plan={plan}): {e}\n{raw[:1000]}")
+            raise HTTPException(status_code=500, detail=f"JSON inválido del modelo: {str(e)}")
         primary_key   = data.primaryColor   or "azul-marino"
         secondary_key = data.secondaryColor or "azul-cielo"
         typo_key      = data.typographyStyle or "sans-humanista"
@@ -510,12 +645,12 @@ Estructura esperada:
         secondary_text = "#111827" if secondary_key in LIGHT_COLORS else "#ffffff"
 
         if base_mode == "oscuro":
-            bg_primary   = "#0f172a"
-            bg_secondary = "#1e293b"
-            text_base    = "#f1f5f9"
-            text_muted   = "#94a3b8"
-            card_bg      = "#1e293b"
-            card_border  = "#334155"
+            bg_primary   = "#0a0a0f"
+            bg_secondary = "#13131a"
+            text_base    = "#f0f0f5"
+            text_muted   = "#9090a0"
+            card_bg      = "#1a1a24"
+            card_border  = "#2a2a3a"
         else:
             bg_primary   = "#ffffff"
             bg_secondary = "#f8fafc"
@@ -524,7 +659,7 @@ Estructura esperada:
             card_bg      = "#ffffff"
             card_border  = "#e2e8f0"
 
-        content_data["_theme"] = {
+        theme_obj = {
             "primaryColor":   primary_hex,
             "secondaryColor": secondary_hex,
             "primaryText":    primary_text,
@@ -542,8 +677,15 @@ Estructura esperada:
             "buttonStyle":    data.buttonStyle    or "solido",
             "animationLevel": data.animationLevel or "sutil",
             "visualStyle":    data.visualStyle    or "moderno",
+            "scrollEffect":   data.scrollEffect   or "fade-in",
         }
 
+        if data.heroImageUrl:
+            theme_obj["heroImageUrl"] = data.heroImageUrl
+        if data.logoImageUrl:
+            theme_obj["logoImageUrl"] = data.logoImageUrl
+
+        content_data["_theme"] = theme_obj
         return {
             "projectId": data.projectId,
             "status":    "success",
