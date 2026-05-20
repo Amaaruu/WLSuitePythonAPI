@@ -65,72 +65,46 @@ LANDING_GOAL_MAP = {
 }
 
 TARGET_AUDIENCE_MAP = {
-    "jovenes":         "jóvenes adultos de 18–28 años, nativos digitales, lenguaje informal y aspiracional",
-    "adultos":         "adultos de 30–50 años, valoran la practicidad, lenguaje directo y claro",
-    "adultos-mayores": "personas de 55+ años, prefieren claridad extrema, sin jerga técnica",
-    "empresas":        "tomadores de decisión en empresas (B2B), lenguaje técnico y orientado a ROI",
-    "profesionales":   "profesionales independientes o ejecutivos, lenguaje sofisticado y eficiente",
-    "padres":          "padres y madres de familia, lenguaje cálido, enfocado en seguridad y confianza",
-    "emprendedores":   "emprendedores y fundadores, lenguaje motivador, orientado a resultados",
+    "jovenes":        "jóvenes de 18 a 28 años, nativos digitales",
+    "adultos":        "adultos de 30 a 50 años con poder adquisitivo",
+    "profesionales":  "profesionales y ejecutivos, tomadores de decisión",
+    "empresas":       "empresas y negocios (mercado B2B)",
+    "emprendedores":  "emprendedores y founders de startups",
+    "padres":         "padres y madres con familia",
+    "adultos-mayores":"adultos mayores de 55 años",
 }
 
 BRAND_POSITIONING_MAP = {
-    "economico":      "posicionamiento de precio bajo, accesible para todos, énfasis en ahorro",
-    "calidad-precio": "mejor relación calidad-precio del mercado, equilibrio entre costo y valor",
-    "premium":        "marca premium, calidad superior, dispuesta a pagar más por mejores resultados",
-    "lujo":           "marca de lujo exclusiva, experiencia aspiracional, precio no es objeción",
+    "economico":      "precio accesible, propuesta de valor económica",
+    "calidad-precio": "mejor relación calidad-precio del mercado",
+    "premium":        "calidad superior, experiencia premium",
+    "lujo":           "exclusividad, lujo y aspiracionalidad",
 }
 
 BRAND_STAGE_MAP = {
-    "nueva-marca":   "marca nueva que se presenta al mercado por primera vez",
-    "establecida":   "marca con trayectoria y reconocimiento en su mercado",
-    "relanzamiento": "marca que se renueva y vuelve con nueva propuesta de valor",
+    "nueva-marca":   "marca nueva que se presenta por primera vez al mercado",
+    "establecida":   "marca con trayectoria y reconocimiento en su sector",
+    "relanzamiento": "marca en proceso de relanzamiento con nueva propuesta de valor",
 }
 
 TONE_MAP = {
-    "profesional": "Tono profesional, confiable, preciso. Sin informalidades.",
-    "cercano":     "Tono cercano y conversacional, como hablarle a un amigo inteligente.",
-    "elegante":    "Tono elegante y sofisticado. Palabras cuidadas, frases bien construidas.",
-    "jovial":      "Tono jovial, divertido, con energía. Puede usar humor ligero.",
+    "profesional": "Tono profesional y confiable, lenguaje preciso y claro.",
+    "cercano":     "Tono cercano y amigable, conversacional, como hablar con un amigo experto.",
+    "elegante":    "Tono elegante y sofisticado, palabras cuidadas, sin coloquialismos.",
+    "jovial":      "Tono jovial y con energía, frases cortas, entusiasmo auténtico.",
     "inspirador":  "Tono inspirador y motivacional, enfocado en el potencial del cliente.",
-    "tecnico":     "Tono técnico y especializado, directo a expertos en el área.",
+    "tecnico":     "Tono técnico y especializado, dirigido a un público experto en el área.",
 }
 
 FORMALITY_MAP = {
-    "formal":      "Usa usted, lenguaje formal, sin contracciones.",
-    "semi-formal": "Tuteo respetuoso, amable pero sin exceso de informalidad.",
-    "informal":    "Tuteando directamente, lenguaje coloquial y cercano.",
-}
-
-VISUAL_STYLE_MAP = {
-    "minimalista": "estética minimalista: mucho espacio en blanco, tipografía limpia, pocos elementos",
-    "moderno":     "diseño moderno y contemporáneo: líneas limpias, geometría plana, colores frescos",
-    "corporativo": "diseño corporativo serio: estructura rígida, aspecto formal y confiable",
-    "futurista":   "estética futurista y tecnológica: dark mode, acentos neón o cian, elementos angulares",
-    "elegante":    "diseño de alta gama: paleta reducida, tipografía serif, mucho aire",
-    "organico":    "estética orgánica y natural: colores de tierra, formas curvas, sensación cálida",
-    "audaz":       "diseño audaz y llamativo: contrastes altos, tipografía display, impacto visual inmediato",
-    "retro":       "estética retro o vintage: paletas desaturadas, tipografías con carácter",
-}
-
-TYPOGRAPHY_MAP = {
-    "geometrica":     "tipografía geométrica sans-serif (Poppins, Montserrat): moderna, limpia, técnica",
-    "sans-humanista": "tipografía sans-serif humanista (Inter, DM Sans): legible, amigable, versátil",
-    "serif-clasico":  "tipografía serif clásica (Playfair, Lora): elegante, literaria, premium",
-    "display":        "tipografía display de alto impacto (Space Grotesk, Clash Display): personalidad fuerte",
-    "monospace":      "tipografía monoespaciada (JetBrains Mono): para marcas tech o dev",
-}
-
-BUTTON_SHAPE_MAP = {
-    "cuadrado":   "botones con bordes rectos (border-radius 0–4px)",
-    "redondeado": "botones con esquinas ligeramente redondeadas (border-radius 8–12px)",
-    "pildora":    "botones en forma de píldora (border-radius 999px)",
+    "formal":      "Usa 'usted' en todo momento. Sin contracciones ni informalidades.",
+    "semi-formal": "Tuteo respetuoso y amable. Natural pero profesional.",
+    "informal":    "Totalmente coloquial y directo. Usa 'tú', contracciones chilenas naturales.",
 }
 
 BUTTON_STYLE_MAP = {
-    "solido":    "botones de fondo sólido con color de relleno fuerte",
-    "outline":   "botones tipo outline, solo borde visible sin relleno",
-    "ghost":     "botones ghost, casi transparentes con hover de relleno",
+    "solido":    "botones con fondo sólido del color primario",
+    "outline":   "botones con borde del color primario y fondo transparente",
     "gradiente": "botones con fondo degradado entre color primario y secundario",
 }
 
@@ -244,15 +218,20 @@ class ProjectData(BaseModel):
     hoverIntensity:  Optional[str] = None
     contentDensity:  Optional[str] = None
 
-    # Imágenes personalizadas (vienen dentro de designPreferences
-    # y AiService.java las extrae como campos de primer nivel)
+    # Imágenes personalizadas
     heroImageUrl: Optional[str] = None
     logoImageUrl: Optional[str] = None
 
 
 # ── Constructor del prompt ────────────────────────────────────────────────────
-
 def build_prompt(data: ProjectData, plan: str) -> str:
+
+    # ── CORRECCIÓN: truncar projectIdea a 800 chars para evitar overflow de tokens ──
+    raw_idea     = data.projectIdea or ""
+    project_idea = raw_idea[:800]
+    if len(raw_idea) > 800:
+        print(f"[WARN] projectIdea truncado de {len(raw_idea)} a 800 chars | projectId={data.projectId}")
+
     sector      = SECTOR_MAP.get(data.businessSector or "", "negocio")
     goal        = LANDING_GOAL_MAP.get(data.landingGoal or "", "informar al visitante")
     audience    = TARGET_AUDIENCE_MAP.get(data.targetAudience or "", "público general")
@@ -260,119 +239,83 @@ def build_prompt(data: ProjectData, plan: str) -> str:
     stage       = BRAND_STAGE_MAP.get(data.brandStage or "", "marca establecida")
     tone        = TONE_MAP.get(data.communicationTone or "", "Tono profesional y claro.")
     formality   = FORMALITY_MAP.get(data.formalityLevel or "", "Tuteo respetuoso.")
-    v_style     = VISUAL_STYLE_MAP.get(data.visualStyle or "", "diseño moderno y limpio")
-    typo        = TYPOGRAPHY_MAP.get(data.typographyStyle or "", "tipografía sans-serif humanista")
-    btn_shape   = BUTTON_SHAPE_MAP.get(data.buttonShape or "", "botones redondeados")
-    btn_style   = BUTTON_STYLE_MAP.get(data.buttonStyle or "", "botones sólidos")
-    anim        = ANIMATION_MAP.get(data.animationLevel or "", "animaciones sutiles")
-    creativity  = CREATIVITY_MAP.get(data.creativityLevel or "", "diseño equilibrado")
-    layout      = LAYOUT_MAP.get(data.layoutType or "", "layout centrado")
 
-    sections_csv  = data.sections or "hero,features,footer"
-    sections_list = [s.strip() for s in sections_csv.split(",") if s.strip()]
-    sections_desc = "\n".join(
-        f"  - {SECTIONS_LABELS.get(s, s)}"
-        for s in sections_list
-    )
+    prompt = f"""Eres el mejor copywriter de conversión de América Latina.
+Crea el contenido completo para una landing page de {data.projectName}.
 
-    # ── Bloque base — todos los planes ───────────────────────────────────────
-    prompt = f"""Eres un copywriter experto en CRO (Conversion Rate Optimization) especializado
-en landing pages de alta conversión para el mercado chileno.
-Tu tarea es generar los textos persuasivos de una landing page real.
-
-REGLA CRÍTICA: No uses frases genéricas como "soluciones innovadoras",
-"calidad garantizada" o "expertos en el área". Cada palabra debe ser específica
-para este negocio y resonar con su audiencia real.
-
-=== CONTEXTO DEL NEGOCIO ===
-Nombre: {data.projectName}
-Tipo de negocio: {sector}
-Propuesta de valor: {data.projectIdea}
-Etapa de la marca: {stage}
-Posicionamiento: {positioning}
-Objetivo de la landing: {goal}
-Público objetivo: {audience}
-CTA principal: {data.callToAction}
+DESCRIPCIÓN DEL NEGOCIO: {project_idea}
+SECTOR: {sector}
+OBJETIVO DE LA LANDING: {goal}
+AUDIENCIA OBJETIVO: {audience}
+POSICIONAMIENTO DE MARCA: {positioning}
+ETAPA DE MARCA: {stage}
+PROPUESTA DE VALOR ADICIONAL: {data.valueProposition or 'No especificada'}
+LLAMADO A LA ACCIÓN PRINCIPAL: {data.callToAction}
 """
 
-    if data.valueProposition:
-        prompt += f"Diferenciador clave: {data.valueProposition}\n"
-
-    # ── Bloque Intermedio+ ────────────────────────────────────────────────────
-    if plan in ["INTERMEDIATE", "PREMIUM"]:
+    if plan in ("INTERMEDIATE", "PREMIUM"):
+        creativity = CREATIVITY_MAP.get(data.creativityLevel or "", "equilibrada")
+        layout     = LAYOUT_MAP.get(data.layoutType or "", "centrado")
         prompt += f"""
-=== IDENTIDAD DE COMUNICACIÓN ===
-Tono: {tone}
-Formalidad: {formality}
-Color primario: {data.primaryColor or 'azul marino'}
-Color secundario: {data.secondaryColor or 'blanco'}
-Modo base: {data.baseMode or 'claro'}
-Contraste: {data.contrastLevel or 'estándar'}
-Estilo visual: {v_style}
-Densidad visual: {data.visualDensity or 'equilibrado'}
-Separación entre secciones: {data.sectionDividers or 'limpia'}
-
-=== SECCIONES OBLIGATORIAS (en este orden) ===
-{sections_desc}
+TONO DE COMUNICACIÓN: {tone}
+FORMALIDAD: {formality}
+ESTILO VISUAL: {data.visualStyle or 'moderno'}
+DENSIDAD DE CONTENIDO: {data.visualDensity or 'equilibrado'}
+CREATIVIDAD: {creativity}
+LAYOUT: {layout}
 """
 
-    # ── Bloque Premium ────────────────────────────────────────────────────────
     if plan == "PREMIUM":
+        btn_style  = BUTTON_STYLE_MAP.get(data.buttonStyle or "", "sólido")
+        animation  = ANIMATION_MAP.get(data.animationLevel or "", "sutil")
+        font_fam   = FONT_FAMILY_MAP.get(data.typographyStyle or "", "'Inter', sans-serif")
         prompt += f"""
-=== DIRECTRICES AVANZADAS ===
-Tipografía: {typo}
-Jerarquía tipográfica: {data.typographyHierarchy or 'equilibrada'}
-Layout: {layout}
-Forma de botones: {btn_shape}
-Estilo de botones: {btn_style}
-Íconos: {data.iconStyle or 'outline'}
-Animaciones: {anim}
-Efecto de scroll: {data.scrollEffect or 'fade-in'}
-Efecto hero: {data.heroEffect or 'ninguno'}
-Intensidad hover: {data.hoverIntensity or 'sutil'}
-Densidad de contenido: {data.contentDensity or 'equilibrado'}
-Creatividad: {creativity}
+TIPOGRAFÍA: {font_fam}
+ESTILO DE BOTONES: {btn_style}
+NIVEL DE ANIMACIÓN: {animation}
+DENSIDAD DE CONTENIDO AVANZADA: {data.contentDensity or 'equilibrado'}
 """
 
     return prompt
 
+
+# ── Estructura JSON esperada por plan ─────────────────────────────────────────
 def get_json_structure(plan: str, sections_csv: str) -> str:
     sections = [s.strip() for s in sections_csv.split(",") if s.strip()]
 
-    # Hero — presente en todos los planes
     base = {
         "hero": {
-            "badge":           "...",
-            "headline":        "...",
-            "subheadline":     "...",
-            "ctaButton":       "...",
-            "secondaryCta":    "...",
-            "trustIndicators": ["...", "...", "..."],
-            "supportingText":  "..."
+            "badge":          "...",
+            "headline":       "...",
+            "subheadline":    "...",
+            "ctaButton":      "...",
+            "secondaryCta":   "...",
+            "supportingText": "..."
+        },
+        "features": [
+            {"icon": "⚡", "title": "...", "description": "..."},
+            {"icon": "🎯", "title": "...", "description": "..."},
+            {"icon": "✨", "title": "...", "description": "..."},
+            {"icon": "🚀", "title": "...", "description": "..."},
+        ],
+        "footer": {
+            "description": "...",
+            "contact":     "contacto@empresa.cl",
+            "phone":       "+56 9 XXXX XXXX",
+            "legalText":   "Todos los derechos reservados.",
+            "links": [
+                {"label": "Inicio",    "href": "#hero"},
+                {"label": "Servicios", "href": "#features"},
+                {"label": "Contacto",  "href": "#contacto"},
+            ]
         }
     }
 
-    # Features — todos los planes (BASIC incluye si está en sections)
-    if "features" in sections or plan in ["INTERMEDIATE", "PREMIUM"]:
-        base["features"] = [
-            {"icon": "🎯", "title": "...", "description": "...", "highlight": False},
-            {"icon": "⚡", "title": "...", "description": "...", "highlight": True},
-            {"icon": "🛡️", "title": "...", "description": "...", "highlight": False},
-            {"icon": "✨", "title": "...", "description": "...", "highlight": False},
-        ]
-
-    # ── BASIC ─────────────────────────────────────────────────────────────────
     if plan == "BASIC":
-        base["footer"] = {
-            "description": "...",
-            "contact":     "contacto@empresa.cl",
-            "legalText":   "Todos los derechos reservados."
-        }
         return json.dumps(base, ensure_ascii=False, indent=2)
 
     # ── INTERMEDIATE ──────────────────────────────────────────────────────────
     if plan == "INTERMEDIATE":
-        # socialProof: LandingViewer lee d.socialProof.testimonials y d.socialProof.stats
         if "testimonials" in sections:
             base["socialProof"] = {
                 "title":    "...",
@@ -401,7 +344,6 @@ def get_json_structure(plan: str, sections_csv: str) -> str:
                 ]
             }
 
-        # urgency: LandingViewer lee countdown.enabled (booleano)
         if "urgency" in sections:
             base["urgency"] = {
                 "badge":          "...",
@@ -413,7 +355,6 @@ def get_json_structure(plan: str, sections_csv: str) -> str:
                 "supportingText": "..."
             }
 
-        # cta final — siempre presente desde INTERMEDIATE
         base["cta"] = {
             "title":        "...",
             "subtitle":     "...",
@@ -427,12 +368,17 @@ def get_json_structure(plan: str, sections_csv: str) -> str:
             "contact":     "contacto@empresa.cl",
             "phone":       "+56 9 XXXX XXXX",
             "legalText":   "Todos los derechos reservados.",
-            "socialProof": "..."
+            "socialProof": "...",
+            "links": [
+                {"label": "Inicio",    "href": "#hero"},
+                {"label": "Servicios", "href": "#features"},
+                {"label": "Contacto",  "href": "#contacto"},
+            ]
         }
+
         return json.dumps(base, ensure_ascii=False, indent=2)
 
     # ── PREMIUM ───────────────────────────────────────────────────────────────
-    # socialProof: misma estructura que INTERMEDIATE
     if "testimonials" in sections:
         base["socialProof"] = {
             "title":    "...",
@@ -478,7 +424,6 @@ def get_json_structure(plan: str, sections_csv: str) -> str:
             ]
         }
 
-    # faq: misma estructura que INTERMEDIATE
     if "faq" in sections:
         base["faq"] = {
             "title":    "...",
@@ -492,7 +437,6 @@ def get_json_structure(plan: str, sections_csv: str) -> str:
             ]
         }
 
-    # urgency: misma estructura que INTERMEDIATE
     if "urgency" in sections:
         base["urgency"] = {
             "badge":          "...",
@@ -504,7 +448,6 @@ def get_json_structure(plan: str, sections_csv: str) -> str:
             "supportingText": "..."
         }
 
-    # howItWorks: exclusivo Premium — LandingViewer lee d.howItWorks.steps
     base["howItWorks"] = {
         "title":    "...",
         "subtitle": "...",
@@ -535,6 +478,7 @@ def get_json_structure(plan: str, sections_csv: str) -> str:
             {"label": "Contacto",  "href": "#contacto"},
         ]
     }
+
     return json.dumps(base, ensure_ascii=False, indent=2)
 
 
@@ -575,7 +519,8 @@ async def generate_landing(data: ProjectData):
         full_prompt = f"""{prompt}
 
 === INSTRUCCIÓN DE SALIDA ===
-Devuelve ÚNICAMENTE el objeto JSON. Sin markdown, sin explicaciones, sin texto fuera del JSON.
+Devuelve ÚNICAMENTE el objeto JSON.
+Sin markdown, sin explicaciones, sin texto fuera del JSON.
 Rellena cada "..." con copy real, específico y persuasivo para {data.projectName}.
 Mercado objetivo: Chile. Usa español chileno natural (no neutro).
 
@@ -589,31 +534,37 @@ REGLAS DE CALIDAD:
 JSON esperado:
 {json_structure}
 """
-
-        # ── Llamada al modelo de IA ───────────────────────────────────────────
-        response = client.chat.completions.create(
-            model=model,
-            max_tokens=max_tokens,
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "Eres el mejor copywriter de conversión de América Latina, "
-                        "especializado en landing pages para el mercado chileno. "
-                        "Respondes SOLO con JSON válido. Nunca incluyes texto adicional, "
-                        "nunca usas bloques markdown, nunca explicas tu respuesta."
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": full_prompt
-                }
-            ]
-        )
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                max_tokens=max_tokens,
+                timeout=75.0,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "Eres el mejor copywriter de conversión de América Latina, "
+                            "especializado en landing pages para el mercado chileno. "
+                            "Respondes SOLO con JSON válido. Nunca incluyes texto adicional, "
+                            "nunca usas bloques markdown, nunca explicas tu respuesta."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": full_prompt
+                    }
+                ]
+            )
+        except Exception as timeout_err:
+            print(f"[ERROR] Timeout o fallo de red en modelo '{model}' | projectId={data.projectId}: {timeout_err}")
+            raise HTTPException(
+                status_code=504,
+                detail=f"El modelo de IA tardó demasiado en responder. Intenta nuevamente. (plan={plan}, modelo={model})"
+            )
 
         raw = response.choices[0].message.content.strip()
 
-        # ── Limpieza defensiva ────────────────────────────────────────────────
+        # ── Limpieza defensiva del JSON ───────────────────────────────────────
         raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
         raw = re.sub(r"\s*```\s*$",       "", raw, flags=re.MULTILINE)
         raw = raw.strip()
@@ -627,74 +578,17 @@ JSON esperado:
                 print(f"[ERROR] Sin JSON en respuesta (plan={plan}):\n{raw[:500]}")
                 raise HTTPException(status_code=500, detail="El modelo no retornó un JSON válido.")
 
-        # ── Parseo ────────────────────────────────────────────────────────────
-        try:
-            content_data = json.loads(raw)
-        except json.JSONDecodeError as e:
-            print(f"[ERROR] JSON inválido (plan={plan}): {e}\n{raw[:1000]}")
-            raise HTTPException(status_code=500, detail=f"JSON inválido del modelo: {str(e)}")
-        primary_key   = data.primaryColor   or "azul-marino"
-        secondary_key = data.secondaryColor or "azul-cielo"
-        typo_key      = data.typographyStyle or "sans-humanista"
-        base_mode     = data.baseMode        or "claro"
+        parsed = json.loads(raw)
+        print(f"[OK] JSON generado correctamente | projectId={data.projectId} | plan={plan} | claves={list(parsed.keys())}")
 
-        primary_hex   = COLOR_HEX_MAP.get(primary_key,   "#1e3a5f")
-        secondary_hex = COLOR_HEX_MAP.get(secondary_key, "#3b82f6")
-
-        primary_text   = "#111827" if primary_key   in LIGHT_COLORS else "#ffffff"
-        secondary_text = "#111827" if secondary_key in LIGHT_COLORS else "#ffffff"
-
-        if base_mode == "oscuro":
-            bg_primary   = "#0a0a0f"
-            bg_secondary = "#13131a"
-            text_base    = "#f0f0f5"
-            text_muted   = "#9090a0"
-            card_bg      = "#1a1a24"
-            card_border  = "#2a2a3a"
-        else:
-            bg_primary   = "#ffffff"
-            bg_secondary = "#f8fafc"
-            text_base    = "#0f172a"
-            text_muted   = "#64748b"
-            card_bg      = "#ffffff"
-            card_border  = "#e2e8f0"
-
-        theme_obj = {
-            "primaryColor":   primary_hex,
-            "secondaryColor": secondary_hex,
-            "primaryText":    primary_text,
-            "secondaryText":  secondary_text,
-            "fontImport":     FONT_IMPORT_MAP.get(typo_key, FONT_IMPORT_MAP["sans-humanista"]),
-            "fontFamily":     FONT_FAMILY_MAP.get(typo_key, FONT_FAMILY_MAP["sans-humanista"]),
-            "baseMode":       base_mode,
-            "bgPrimary":      bg_primary,
-            "bgSecondary":    bg_secondary,
-            "textBase":       text_base,
-            "textMuted":      text_muted,
-            "cardBg":         card_bg,
-            "cardBorder":     card_border,
-            "buttonShape":    data.buttonShape    or "redondeado",
-            "buttonStyle":    data.buttonStyle    or "solido",
-            "animationLevel": data.animationLevel or "sutil",
-            "visualStyle":    data.visualStyle    or "moderno",
-            "scrollEffect":   data.scrollEffect   or "fade-in",
-        }
-
-        if data.heroImageUrl:
-            theme_obj["heroImageUrl"] = data.heroImageUrl
-        if data.logoImageUrl:
-            theme_obj["logoImageUrl"] = data.logoImageUrl
-
-        content_data["_theme"] = theme_obj
-        return {
-            "projectId": data.projectId,
-            "status":    "success",
-            "content":   content_data
-        }
+        return {"content": parsed}
 
     except HTTPException:
         raise
+    except json.JSONDecodeError as je:
+        print(f"[ERROR] JSON inválido del modelo | projectId={data.projectId}: {je}\nRaw: {raw[:300]}")
+        raise HTTPException(status_code=500, detail="El modelo retornó un JSON malformado.")
     except Exception as e:
-        print(f"[ERROR] Generación fallida (plan={data.userPlan}): {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=str(e))
-    
+        print(f"[ERROR] Excepción no controlada en /api/v1/ai/generate | projectId={data.projectId}: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
