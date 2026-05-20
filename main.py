@@ -555,3 +555,4 @@ Estructura esperada:
     except Exception as e:
         print(f"[ERROR] Generación fallida (plan={data.userPlan}): {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
+    
