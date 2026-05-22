@@ -22,7 +22,7 @@ client = OpenAI(
 MODELOS_IA = {
     "BASIC":        "google/gemini-2.5-flash-lite",
     "INTERMEDIATE": "openai/gpt-4o-mini",
-    "PREMIUM":      "anthropic/claude-3.5-sonnet",
+    "PREMIUM":      "anthropic/claude-haiku-4.5",
 }
 
 MAX_TOKENS_BY_PLAN = {
